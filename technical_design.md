@@ -9,33 +9,26 @@
 
 ```mermaid
 graph TD
-    %% Custom styles
-    classDef actorStyle fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:#01579b;
-    classDef adminStyle fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#e65100;
-    classDef ucStyle fill:#ffffff,stroke:#333333,stroke-width:1px,rx:10,ry:10;
-
     subgraph "Front-Office (Visiteur)"
-        direction TB
-        V[Visiteur]:::actorStyle
-        V -->|Consulter| UC1([Voir Accueil/Menu/Boutique]):::ucStyle
-        V -->|Consulter| UC2([Voir Détail Produit]):::ucStyle
-        V -->|Action| UC3([Ajouter au Panier]):::ucStyle
-        V -->|Action| UC4([Passer Commande]):::ucStyle
-        V -->|Action| UC5([Envoyer Message Contact]):::ucStyle
-        V -->|Action| UC6([Laisser un Avis]):::ucStyle
+        V[Visiteur]
+        V -->|Consulter| UC1[Voir Accueil/Menu/Boutique]
+        V -->|Consulter| UC2[Voir Détail Produit]
+        V -->|Action| UC3[Ajouter au Panier]
+        V -->|Action| UC4[Passer Commande]
+        V -->|Action| UC5[Envoyer Message Contact]
+        V -->|Action| UC6[Laisser un Avis]
     end
 
     subgraph "Back-Office (Admin)"
-        direction TB
-        A[Administrateur]:::adminStyle
-        A -->|Auth| UC7([Login / Logout]):::ucStyle
-        A -->|Gestion| UC8([Gérer Produits]):::ucStyle
-        A -->|Gestion| UC9([Gérer Catégories]):::ucStyle
-        A -->|Gestion| UC10([Gérer Commandes & Export]):::ucStyle
-        A -->|Gestion| UC11([Gérer Stocks]):::ucStyle
-        A -->|Gestion| UC12([Gérer Codes Promo]):::ucStyle
-        A -->|Gestion| UC13([Modérer Avis]):::ucStyle
-        A -->|Visualiser| UC14([Dashboard Stats]):::ucStyle
+        A[Administrateur]
+        A -->|Auth| UC7[Login / Logout]
+        A -->|Gestion| UC8[Gérer Produits]
+        A -->|Gestion| UC9[Gérer Catégories]
+        A -->|Gestion| UC10[Gérer Commandes & Export]
+        A -->|Gestion| UC11[Gérer Stocks]
+        A -->|Gestion| UC12[Gérer Codes Promo]
+        A -->|Gestion| UC13[Modérer Avis]
+        A -->|Visualiser| UC14[Dashboard Stats]
     end
 ```
 
@@ -190,13 +183,6 @@ erDiagram
 
 ```mermaid
 classDiagram
-    %% Styles
-    classDef controller fill:#e8f5e9,stroke:#2e7d32,stroke-width:1px;
-    classDef service fill:#fff3e0,stroke:#ef6c00,stroke-width:1px;
-    classDef model fill:#e3f2fd,stroke:#1565c0,stroke-width:1px;
-    classDef app fill:#f3e5f5,stroke:#7b1fa2,stroke-width:1px;
-    classDef system fill:#ffffff,stroke:#333,stroke-width:1px;
-
     %% Relations
     App --> PublicRoutes
     App --> AdminRoutes
@@ -219,21 +205,18 @@ classDiagram
         +express()
         +listen()
     }
-    class App app
 
     class ShopController {
         +homePage()
         +productPage()
         +menuPage()
     }
-    class ShopController controller
 
     class CartController {
         +cartPage()
         +checkoutPage()
         +processCheckout()
     }
-    class CartController controller
 
     class AdminController {
         +dashboard()
@@ -242,32 +225,27 @@ classDiagram
         +exportOrders()
         +manageReviews()
     }
-    class AdminController controller
 
     class AuthController {
         +loginPage()
         +processLogin()
         +logout()
     }
-    class AuthController controller
 
     class EmailService {
         +sendOrderConfirmation()
         +sendContactEmail()
     }
-    class EmailService service
 
     class ImageService {
         +uploadMultiple()
         +optimizeImage()
     }
-    class ImageService service
 
     class StripeService {
         +createCheckoutSession()
         +handleWebhook()
     }
-    class StripeService service
 
     class PrismaClient {
         +product
@@ -275,5 +253,4 @@ classDiagram
         +order
         +user
     }
-    class PrismaClient model
 ```
