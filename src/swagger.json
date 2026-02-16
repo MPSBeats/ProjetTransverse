@@ -140,8 +140,7 @@
           }
         }
       }
-    }
-  },
+    },
     "/boutique/{slug}/avis": {
       "post": {
         "summary": "Soumettre un avis sur un produit",
