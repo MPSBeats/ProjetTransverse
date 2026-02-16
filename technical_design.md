@@ -2,7 +2,7 @@
 
 ## 1. Diagramme de Cas d'Utilisation (UML)
 
-**Rôle :** Valider la compétence "Analyser les besoins" (C26).
+**Rôle :** Analyser le besoin.
 **Acteurs :**
 - **Visiteur/Client** : Consulte le site, commande, contacte.
 - **Administrateur** : Gère le catalogue, les commandes, les stocks, etc.
@@ -35,7 +35,7 @@ graph TD
 ## 2. MCD (Modèle Conceptuel de Données) - Merise
 
 **Rôle :** Structurer la base de données.
-**Description :** Met en évidence les entités et relations sans se soucier des types techniques précis.
+**Description :** Met en évidence les entités et relations.
 
 ```mermaid
 erDiagram
