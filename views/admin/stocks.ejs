@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= typeof metaTitle !=='undefined' ? metaTitle : "Stocks — Admin" %>
+    </title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://unpkg.com/alpinejs@3.14.3/dist/cdn.min.js" defer></script>
+</head>
+
+<body class="bg-creme font-body antialiased">
+    <div class="flex min-h-screen">
+        <%- include('../partials/admin-sidebar', { metaTitle, adminName }) %>
+
+            <div class="flex-1 overflow-auto">
+                <div class="p-6 lg:p-8">
+                    <h1 class="font-display text-2xl text-noir-cafe mb-8">Gestion des Stocks</h1>
+
+                    <div class="bg-blanc-casse rounded-gourmand-lg shadow-card overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="bg-creme text-left text-brun/60">
+                                        <th class="px-4 py-3">Image</th>
+                                        <th class="px-4 py-3">Produit</th>
+                                        <th class="px-4 py-3">Catégorie</th>
+                                        <th class="px-4 py-3">Stock actuel</th>
+                                        <th class="px-4 py-3">Seuil d'alerte</th>
+                                        <th class="px-4 py-3">Statut</th>
+                                        <th class="px-4 py-3">Modifier</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% products.forEach(function(product) { %>
+                                        <tr class="border-b border-creme/50 hover:bg-creme/30 transition-colors"
+                                            x-data="{ editing: false, newStock: <%= product.stock %>, loading: false }">
+                                            <td class="px-4 py-3"><img
+                                                    src="<%= getProductImage(product.images, 'thumbnail') %>" alt=""
+                                                    class="w-10 h-10 rounded-gourmand object-cover"></td>
+                                            <td class="px-4 py-3 font-medium text-brun">
+                                                <%= product.name %>
+                                            </td>
+                                            <td class="px-4 py-3 text-brun/60">
+                                                <%= product.category.name %>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <span x-show="!editing" class="font-bold text-lg"
+                                                    x-text="newStock"></span>
+                                                <input x-show="editing" type="number" x-model.number="newStock" min="0"
+                                                    class="w-20 px-2 py-1 rounded border border-creme text-sm focus:border-terracotta outline-none"
+                                                    style="display: none;">
+                                            </td>
+                                            <td class="px-4 py-3 text-brun/50">
+                                                <%= product.stockAlertThreshold %>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <% const status=getStockStatus(product.stock,
+                                                    product.stockAlertThreshold); %>
+                                                    <span
+                                                        class="px-2 py-1 rounded-full text-xs font-medium
+                        <%= status === 'in' ? 'bg-green-100 text-green-700' : status === 'low' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700' %>">
+                                                        <%= status==='in' ? 'OK' : status==='low' ? 'Faible' : 'Rupture'
+                                                            %>
+                                                    </span>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <template x-if="!editing">
+                                                    <button @click="editing = true"
+                                                        class="text-xs text-terracotta hover:text-terracotta-dark transition-colors font-medium">Modifier</button>
+                                                </template>
+                                                <template x-if="editing">
+                                                    <div class="flex gap-2">
+                                                        <button
+                                                            @click="loading = true; fetch('/api/admin/products/<%= product.id %>/stock', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ stock: newStock, reason: 'adjustment' }) }).then(r => r.json()).then(d => { if(d.success) { editing = false; } loading = false; })"
+                                                            :disabled="loading"
+                                                            class="text-xs text-vert-the hover:text-green-700 font-medium">
+                                                            <span x-show="!loading">✓</span><span
+                                                                x-show="loading">...</span>
+                                                        </button>
+                                                        <button
+                                                            @click="editing = false; newStock = <%= product.stock %>"
+                                                            class="text-xs text-brun/40 hover:text-red-500">✕</button>
+                                                    </div>
+                                                </template>
+                                            </td>
+                                        </tr>
+                                        <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= typeof metaTitle !=='undefined' ? metaTitle : "Admin — L'InviThé Gourmand" %>
+    </title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="https://unpkg.com/alpinejs@3.14.3/dist/cdn.min.js" defer></script>
+</head>
+
+<body class="bg-creme font-body antialiased">
+    <!-- Sidebar + Content -->
+    <div class="flex min-h-screen">
+        <%- include('../partials/admin-sidebar', { metaTitle, adminName }) %>
+
+            <!-- Main Content -->
+            <div class="flex-1 overflow-auto">
+
+                <!-- Dashboard content -->
+                <div class="p-6 lg:p-8">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h1 class="font-display text-2xl text-noir-cafe">Dashboard</h1>
+                            <p class="text-sm text-brun/50 mt-1">Bienvenue, <%= adminName || 'Admin' %>
+                            </p>
+                        </div>
+                        <a href="/" target="_blank"
+                            class="text-sm text-terracotta hover:text-terracotta-dark transition-colors flex items-center gap-1">
+                            Voir le site <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                        </a>
+                    </div>
+
+                    <!-- KPIs -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                        <div class="bg-blanc-casse rounded-gourmand-lg p-5 shadow-card">
+                            <p class="text-xs text-brun/50 uppercase tracking-wide">CA aujourd'hui</p>
+                            <p class="font-display text-2xl text-noir-cafe mt-1">
+                                <%= formatPrice(stats.todayRevenue) %>
+                            </p>
+                        </div>
+                        <div class="bg-blanc-casse rounded-gourmand-lg p-5 shadow-card">
+                            <p class="text-xs text-brun/50 uppercase tracking-wide">CA du mois</p>
+                            <p class="font-display text-2xl text-terracotta mt-1">
+                                <%= formatPrice(stats.monthRevenue) %>
+                            </p>
+                        </div>
+                        <div class="bg-blanc-casse rounded-gourmand-lg p-5 shadow-card">
+                            <p class="text-xs text-brun/50 uppercase tracking-wide">Commandes total</p>
+                            <p class="font-display text-2xl text-noir-cafe mt-1">
+                                <%= stats.totalOrders %>
+                            </p>
+                        </div>
+                        <div class="bg-blanc-casse rounded-gourmand-lg p-5 shadow-card">
+                            <p class="text-xs text-brun/50 uppercase tracking-wide">Panier moyen</p>
+                            <p class="font-display text-2xl text-vert-the mt-1">
+                                <%= formatPrice(stats.averageCart) %>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <!-- Graphique CA -->
+                        <div class="lg:col-span-2 bg-blanc-casse rounded-gourmand-lg p-6 shadow-card">
+                            <h2 class="font-display text-lg text-noir-cafe mb-4">Chiffre d'affaires (30 jours)</h2>
+                            <canvas id="revenueChart" height="200"></canvas>
+                        </div>
+
+                        <!-- Alertes stock -->
+                        <div class="bg-blanc-casse rounded-gourmand-lg p-6 shadow-card">
+                            <h2 class="font-display text-lg text-noir-cafe mb-4">
+                                Alertes stock
+                                <% if (stockAlerts.length> 0) { %><span
+                                        class="ml-2 px-2 py-0.5 bg-rose-macaron/20 text-rose-macaron-dark text-xs rounded-full">
+                                        <%= stockAlerts.length %>
+                                    </span>
+                                    <% } %>
+                            </h2>
+                            <% if (stockAlerts.length===0) { %>
+                                <p class="text-sm text-brun/40 text-center py-8">Aucune alerte de stock 👍</p>
+                                <% } else { %>
+                                    <div class="space-y-3">
+                                        <% stockAlerts.forEach(function(p) { %>
+                                            <div
+                                                class="flex items-center justify-between py-2 border-b border-creme last:border-0">
+                                                <div>
+                                                    <p class="text-sm font-medium text-brun">
+                                                        <%= p.name %>
+                                                    </p>
+                                                    <p
+                                                        class="text-xs text-<%= p.stock === 0 ? 'rose-macaron-dark' : 'or-doux' %>">
+                                                        <%= p.stock===0 ? 'Rupture' : p.stock + ' restant(s)' %>
+                                                    </p>
+                                                </div>
+                                                <a href="/admin/stocks"
+                                                    class="text-xs text-terracotta hover:text-terracotta-dark">Gérer</a>
+                                            </div>
+                                            <% }); %>
+                                    </div>
+                                    <% } %>
+                        </div>
+                    </div>
+
+                    <!-- Commandes récentes -->
+                    <div class="bg-blanc-casse rounded-gourmand-lg p-6 shadow-card mt-8">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="font-display text-lg text-noir-cafe">Commandes récentes</h2>
+                            <a href="/admin/commandes" class="text-sm text-terracotta hover:text-terracotta-dark">Tout
+                                voir
+                                →</a>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="border-b border-creme text-left text-brun/50">
+                                        <th class="pb-3 pr-4">N°</th>
+                                        <th class="pb-3 pr-4">Client</th>
+                                        <th class="pb-3 pr-4">Total</th>
+                                        <th class="pb-3 pr-4">Statut</th>
+                                        <th class="pb-3">Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% recentOrders.forEach(function(order) { %>
+                                        <tr class="border-b border-creme/50 last:border-0">
+                                            <td class="py-3 pr-4 font-medium text-terracotta">
+                                                <%= order.orderNumber %>
+                                            </td>
+                                            <td class="py-3 pr-4">
+                                                <%= order.customerName %>
+                                            </td>
+                                            <td class="py-3 pr-4 font-medium">
+                                                <%= formatPrice(order.total) %>
+                                            </td>
+                                            <td class="py-3 pr-4"><span
+                                                    class="px-2 py-1 rounded-full text-xs font-medium"
+                                                    style="background: <%= getOrderStatusColor(order.status) %>20; color: <%= getOrderStatusColor(order.status) %>;">
+                                                    <%= getOrderStatusLabel(order.status) %>
+                                                </span></td>
+                                            <td class="py-3 text-brun/50">
+                                                <%= new Date(order.createdAt).toLocaleDateString('fr-FR') %>
+                                            </td>
+                                        </tr>
+                                        <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Stats par catégorie -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+                        <div class="bg-blanc-casse rounded-gourmand-lg p-6 shadow-card">
+                            <h2 class="font-display text-lg text-noir-cafe mb-4">📊 CA par catégorie</h2>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm">
+                                    <thead>
+                                        <tr class="border-b border-creme text-left text-brun/50">
+                                            <th class="pb-3 pr-4">Catégorie</th>
+                                            <th class="pb-3 pr-4">CA total</th>
+                                            <th class="pb-3 pr-4">Meilleur produit</th>
+                                            <th class="pb-3">Ventes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% if (typeof categoryStats !=='undefined' ) {
+                                            categoryStats.forEach(function(cat) { %>
+                                            <tr class="border-b border-creme/50 last:border-0">
+                                                <td class="py-3 pr-4 font-medium text-noir-cafe">
+                                                    <%= cat.name %>
+                                                </td>
+                                                <td class="py-3 pr-4 text-terracotta font-medium">
+                                                    <%= formatPrice(cat.revenue) %>
+                                                </td>
+                                                <td class="py-3 pr-4 text-brun/70 text-xs">
+                                                    <%= cat.topProduct %>
+                                                </td>
+                                                <td class="py-3 text-brun/50">
+                                                    <%= cat.topProductQty %>
+                                                </td>
+                                            </tr>
+                                            <% }); } %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Avis en attente -->
+                        <div class="bg-blanc-casse rounded-gourmand-lg p-6 shadow-card">
+                            <h2 class="font-display text-lg text-noir-cafe mb-4">💬 Avis clients</h2>
+                            <% if (typeof pendingReviews !=='undefined' && pendingReviews> 0) { %>
+                                <div class="bg-yellow-50 rounded-gourmand p-4 flex items-center gap-4">
+                                    <div
+                                        class="w-12 h-12 bg-yellow-400/20 rounded-full flex items-center justify-center text-2xl">
+                                        ⏳</div>
+                                    <div>
+                                        <p class="font-display text-2xl text-noir-cafe">
+                                            <%= pendingReviews %>
+                                        </p>
+                                        <p class="text-sm text-brun/50">avis en attente de modération</p>
+                                    </div>
+                                    <a href="/admin/avis?status=pending"
+                                        class="ml-auto px-4 py-2 bg-yellow-500 text-white rounded-gourmand text-sm font-medium hover:bg-yellow-600 transition-colors">Modérer</a>
+                                </div>
+                                <% } else { %>
+                                    <p class="text-sm text-brun/40 text-center py-8">Aucun avis en attente 👍</p>
+                                    <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+    </div>
+
+    <!-- Chart.js script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const revenueData = <% - JSON.stringify(revenueByDay) %>;
+            const labels = Object.keys(revenueData).map(d => {
+                const [y, m, day] = d.split('-');
+                return day + '/' + m;
+            });
+            const values = Object.values(revenueData);
+
+            new Chart(document.getElementById('revenueChart'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'CA (€)',
+                        data: values,
+                        borderColor: '#C4704B',
+                        backgroundColor: 'rgba(196, 112, 75, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 2,
+                        pointHoverRadius: 5,
+                        borderWidth: 2,
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { callback: v => v + ' €' }, grid: { color: 'rgba(0,0,0,0.05)' } },
+                        x: { grid: { display: false }, ticks: { maxTicksLimit: 10 } },
+                    },
+                },
+            });
+        });
+    </script>
+</body>
+
+</html>

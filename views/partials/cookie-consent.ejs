@@ -1,0 +1,52 @@
+<!-- views/partials/cookie-consent.ejs — Bandeau cookie RGPD -->
+<div id="cookie-consent" style="display:none;" class="fixed bottom-0 inset-x-0 z-50 p-4 sm:p-6">
+    <div class="max-w-4xl mx-auto rounded-gourmand-lg shadow-2xl p-6 sm:p-8"
+        style="background-color: #1a1a1a; border: 1px solid rgba(255,255,255,0.1);">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div class="flex-1">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="text-2xl">🍪</span>
+                    <h3 class="font-display text-lg" style="color: #ffffff;">Ce site utilise des cookies</h3>
+                </div>
+                <p class="text-sm leading-relaxed" style="color: #cccccc;">
+                    Nous utilisons des cookies essentiels pour le fonctionnement du site (panier, session).
+                    En acceptant, vous nous permettez d'améliorer votre expérience et de pré-remplir vos informations
+                    lors de vos prochaines commandes.
+                    <a href="/confidentialite" class="text-terracotta hover:underline ml-1">En savoir plus</a>
+                </p>
+            </div>
+            <div class="flex gap-3 flex-shrink-0">
+                <button onclick="declineCookies()" class="px-5 py-2.5 text-sm rounded-gourmand transition-all"
+                    style="color: #cccccc; border: 1px solid rgba(255,255,255,0.3);">
+                    Refuser
+                </button>
+                <button onclick="acceptCookies()"
+                    class="px-5 py-2.5 text-sm bg-terracotta text-blanc-casse font-medium rounded-gourmand hover:bg-terracotta-dark transition-all shadow-warm">
+                    Accepter
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Vérifier si l'utilisateur a déjà donné son consentement
+    (function () {
+        var consent = localStorage.getItem('cookie_consent');
+        if (!consent) {
+            document.getElementById('cookie-consent').style.display = 'block';
+        }
+    })();
+
+    function acceptCookies() {
+        localStorage.setItem('cookie_consent', 'accepted');
+        localStorage.setItem('cookie_consent_date', new Date().toISOString());
+        document.getElementById('cookie-consent').style.display = 'none';
+    }
+
+    function declineCookies() {
+        localStorage.setItem('cookie_consent', 'declined');
+        localStorage.setItem('cookie_consent_date', new Date().toISOString());
+        document.getElementById('cookie-consent').style.display = 'none';
+    }
+</script>

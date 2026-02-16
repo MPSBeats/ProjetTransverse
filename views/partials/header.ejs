@@ -1,0 +1,99 @@
+<!-- views/partials/header.ejs — Navigation principale -->
+<header class="sticky top-0 z-40 bg-blanc-casse/95 backdrop-blur-md border-b border-creme shadow-sm"
+    x-data="{ mobileOpen: false }">
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Navigation principale">
+        <div class="flex items-center justify-between h-16 lg:h-20">
+
+            <!-- Logo -->
+            <a href="/" class="flex items-center gap-2 group" aria-label="Accueil L'InviThé Gourmand">
+                <span class="text-2xl">🍵</span>
+                <div>
+                    <span
+                        class="font-display text-xl lg:text-2xl text-noir-cafe group-hover:text-terracotta transition-colors">L'InviThé</span>
+                    <span class="font-accent italic text-sm text-terracotta block -mt-1 hidden sm:block">Gourmand</span>
+                </div>
+            </a>
+
+            <!-- Navigation Desktop -->
+            <div class="hidden lg:flex items-center gap-8">
+                <a href="/" class="font-body text-sm font-medium text-brun hover:text-terracotta transition-colors relative group
+           <%= typeof currentPath !== 'undefined' && currentPath === '/' ? 'text-terracotta' : '' %>">
+                    Accueil
+                    <span
+                        class="absolute -bottom-1 left-0 w-0 h-0.5 bg-terracotta transition-all group-hover:w-full"></span>
+                </a>
+                <a href="/menu" class="font-body text-sm font-medium text-brun hover:text-terracotta transition-colors relative group
+           <%= typeof currentPath !== 'undefined' && currentPath === '/menu' ? 'text-terracotta' : '' %>">
+                    Notre Carte
+                    <span
+                        class="absolute -bottom-1 left-0 w-0 h-0.5 bg-terracotta transition-all group-hover:w-full"></span>
+                </a>
+                <a href="/boutique" class="font-body text-sm font-medium text-brun hover:text-terracotta transition-colors relative group
+           <%= typeof currentPath !== 'undefined' && currentPath.startsWith('/boutique') ? 'text-terracotta' : '' %>">
+                    Boutique
+                    <span
+                        class="absolute -bottom-1 left-0 w-0 h-0.5 bg-terracotta transition-all group-hover:w-full"></span>
+                </a>
+                <a href="/contact" class="font-body text-sm font-medium text-brun hover:text-terracotta transition-colors relative group
+           <%= typeof currentPath !== 'undefined' && currentPath === '/contact' ? 'text-terracotta' : '' %>">
+                    Contact
+                    <span
+                        class="absolute -bottom-1 left-0 w-0 h-0.5 bg-terracotta transition-all group-hover:w-full"></span>
+                </a>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center gap-3">
+                <!-- Bouton Panier -->
+                <button x-data @click="$store.cart.drawerOpen = true"
+                    class="relative p-2 text-brun hover:text-terracotta transition-colors"
+                    aria-label="Ouvrir le panier">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    </svg>
+                    <!-- Badge compteur -->
+                    <span x-data x-show="$store.cart.items.length > 0" x-text="$store.cart.items.length" x-transition
+                        class="absolute -top-1 -right-1 w-5 h-5 bg-terracotta text-blanc-casse text-xs font-bold rounded-full flex items-center justify-center animate-bounce-cart"
+                        style="display: none;"></span>
+                </button>
+
+                <!-- Bouton Mobile Menu -->
+                <button @click="mobileOpen = !mobileOpen"
+                    class="lg:hidden p-2 text-brun hover:text-terracotta transition-colors" aria-label="Menu">
+                    <svg x-show="!mobileOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                    <svg x-show="mobileOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        style="display: none;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Navigation Mobile -->
+        <div x-show="mobileOpen" x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0 -translate-y-2" class="lg:hidden py-4 border-t border-creme"
+            style="display: none;">
+            <div class="flex flex-col gap-1">
+                <a href="/"
+                    class="px-4 py-3 rounded-gourmand text-brun hover:bg-creme hover:text-terracotta transition-colors font-medium">Accueil</a>
+                <a href="/menu"
+                    class="px-4 py-3 rounded-gourmand text-brun hover:bg-creme hover:text-terracotta transition-colors font-medium">Notre
+                    Carte</a>
+                <a href="/boutique"
+                    class="px-4 py-3 rounded-gourmand text-brun hover:bg-creme hover:text-terracotta transition-colors font-medium">Boutique</a>
+                <a href="/contact"
+                    class="px-4 py-3 rounded-gourmand text-brun hover:bg-creme hover:text-terracotta transition-colors font-medium">Contact</a>
+                <a href="/panier"
+                    class="px-4 py-3 rounded-gourmand bg-terracotta text-blanc-casse text-center font-medium mt-2">Mon
+                    Panier</a>
+            </div>
+        </div>
+    </nav>
+</header>

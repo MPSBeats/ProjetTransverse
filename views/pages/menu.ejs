@@ -1,0 +1,78 @@
+<% layout('layouts/main') -%>
+
+    <!-- Breadcrumb -->
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4" aria-label="Fil d'Ariane">
+        <ol class="flex items-center gap-2 text-sm text-brun/50">
+            <li><a href="/" class="hover:text-terracotta transition-colors">Accueil</a></li>
+            <li><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg></li>
+            <li class="text-brun font-medium">Notre Carte</li>
+        </ol>
+    </nav>
+
+    <!-- En-tête -->
+    <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-12">
+        <h1 class="font-display text-4xl sm:text-5xl text-noir-cafe" data-aos="fade-up">Notre Carte</h1>
+        <p class="font-accent italic text-lg text-brun/60 mt-3" data-aos="fade-up" data-aos-delay="100">Les saveurs de
+            notre salon de thé</p>
+        <div class="flex items-center justify-center gap-4 mt-4" data-aos="fade-up" data-aos-delay="200">
+            <div class="h-px w-16 bg-terracotta/30"></div><span class="text-terracotta">☕</span>
+            <div class="h-px w-16 bg-terracotta/30"></div>
+        </div>
+    </section>
+
+    <!-- Sections du menu -->
+    <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+        <% sectionOrder.forEach(function(sectionKey, sIdx) { %>
+            <% if (sections[sectionKey] && sections[sectionKey].length> 0) { %>
+                <div class="mb-16" data-aos="fade-up">
+                    <!-- Titre de section -->
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="h-px flex-1 bg-gradient-to-r from-transparent to-terracotta/20"></div>
+                        <h2 class="font-display text-2xl text-noir-cafe">
+                            <%= getMenuSectionLabel(sectionKey) %>
+                        </h2>
+                        <div class="h-px flex-1 bg-gradient-to-l from-transparent to-terracotta/20"></div>
+                    </div>
+
+                    <!-- Items -->
+                    <div class="space-y-4">
+                        <% sections[sectionKey].forEach(function(item) { %>
+                            <div class="flex items-baseline justify-between gap-4 group py-2">
+                                <div class="flex-1">
+                                    <div class="flex items-baseline gap-3">
+                                        <h3
+                                            class="font-body font-medium text-brun group-hover:text-terracotta transition-colors">
+                                            <%= item.name %>
+                                        </h3>
+                                        <div
+                                            class="flex-1 border-b border-dotted border-brun/20 min-w-[40px] relative top-[-3px]">
+                                        </div>
+                                    </div>
+                                    <% if (item.description) { %>
+                                        <p class="text-sm text-brun/50 mt-1 font-accent italic">
+                                            <%= item.description %>
+                                        </p>
+                                        <% } %>
+                                </div>
+                                <span class="font-body font-bold text-terracotta whitespace-nowrap">
+                                    <%= formatPrice(item.price) %>
+                                </span>
+                            </div>
+                            <% }); %>
+                    </div>
+                </div>
+                <% } %>
+                    <% }); %>
+
+                        <!-- Note en bas de carte -->
+                        <div class="text-center mt-12 p-8 bg-creme rounded-gourmand-lg" data-aos="fade-up">
+                            <p class="font-accent italic text-brun/60 text-sm">
+                                Nos pâtisseries sont préparées chaque matin dans notre atelier.<br>
+                                La carte peut varier selon la saison et l'inspiration du chef.
+                            </p>
+                            <p class="text-xs text-brun/40 mt-4">Allergènes : nous consulter. Tous nos thés sont
+                                disponibles en version bio.</p>
+                        </div>
+    </section>

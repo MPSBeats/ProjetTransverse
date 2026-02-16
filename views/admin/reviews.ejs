@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= typeof metaTitle !=='undefined' ? metaTitle : "Avis clients — Admin" %>
+    </title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .btn-filter {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-filter-active-all {
+            background: #C4704B;
+            color: #fff;
+        }
+
+        .btn-filter-active-pending {
+            background: #e6a817;
+            color: #fff;
+        }
+
+        .btn-filter-active-approved {
+            background: #2d6a4f;
+            color: #fff;
+        }
+
+        .btn-filter-active-rejected {
+            background: #c0392b;
+            color: #fff;
+        }
+
+        .btn-filter-inactive {
+            background: #faf5f0;
+            color: #6b5c4d;
+        }
+
+        .btn-filter-inactive:hover {
+            background: #f0e6d8;
+        }
+
+        .badge-pending {
+            background: #fef3cd;
+            color: #856404;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-approved {
+            background: #d4edda;
+            color: #155724;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-rejected {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .star-filled {
+            color: #D4A574;
+        }
+
+        .star-empty {
+            color: #ddd;
+        }
+
+        .btn-approve {
+            background: #2d6a4f;
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-approve:hover {
+            background: #1b4332;
+        }
+
+        .btn-reject {
+            background: #c0392b;
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-reject:hover {
+            background: #96281b;
+        }
+
+        .btn-delete {
+            background: transparent;
+            color: #999;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            border: 1px solid #e0d5c8;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-delete:hover {
+            background: #f8d7da;
+            color: #c0392b;
+            border-color: #c0392b;
+        }
+
+        .review-card {
+            background: #faf5f0;
+            border-radius: 12px;
+            padding: 20px 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+
+        .review-comment {
+            background: rgba(240, 230, 216, 0.4);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #555;
+        }
+    </style>
+</head>
+
+<body class="bg-creme font-body antialiased">
+    <div class="flex min-h-screen">
+        <%- include('../partials/admin-sidebar', { metaTitle, adminName }) %>
+
+            <div class="flex-1 overflow-auto">
+                <div class="p-6 lg:p-8">
+                    <div class="flex items-center justify-between mb-8">
+                        <h1 class="font-display text-2xl text-noir-cafe">Modération des Avis</h1>
+                    </div>
+
+                    <!-- Filtres par statut -->
+                    <div class="flex gap-2 mb-6 flex-wrap">
+                        <a href="/admin/avis"
+                            class="btn-filter <%= currentStatus === 'all' ? 'btn-filter-active-all' : 'btn-filter-inactive' %>">
+                            Tous (<%= counts.all %>)
+                        </a>
+                        <a href="/admin/avis?status=pending"
+                            class="btn-filter <%= currentStatus === 'pending' ? 'btn-filter-active-pending' : 'btn-filter-inactive' %>">
+                            ⏳ En attente (<%= counts.pending %>)
+                        </a>
+                        <a href="/admin/avis?status=approved"
+                            class="btn-filter <%= currentStatus === 'approved' ? 'btn-filter-active-approved' : 'btn-filter-inactive' %>">
+                            ✅ Approuvés (<%= counts.approved %>)
+                        </a>
+                        <a href="/admin/avis?status=rejected"
+                            class="btn-filter <%= currentStatus === 'rejected' ? 'btn-filter-active-rejected' : 'btn-filter-inactive' %>">
+                            ❌ Rejetés (<%= counts.rejected %>)
+                        </a>
+                    </div>
+
+                    <% if (reviews.length===0) { %>
+                        <div class="text-center py-16 review-card">
+                            <svg class="w-16 h-16 mx-auto mb-4" style="color: #ccc;" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                            <p style="color: #999; font-weight: 500;">Aucun avis dans cette catégorie</p>
+                        </div>
+                        <% } else { %>
+                            <div class="space-y-4">
+                                <% reviews.forEach(function(review) { %>
+                                    <div class="review-card">
+                                        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                                            <div class="flex-1">
+                                                <!-- En-tête avis -->
+                                                <div class="flex items-center gap-3 mb-3">
+                                                    <div
+                                                        style="width: 40px; height: 40px; background: rgba(196,112,75,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #C4704B; font-weight: 700; font-size: 14px;">
+                                                        <%= review.customerName.charAt(0).toUpperCase() %>
+                                                    </div>
+                                                    <div>
+                                                        <p class="font-medium text-noir-cafe">
+                                                            <%= review.customerName %>
+                                                        </p>
+                                                        <p style="font-size: 12px; color: #999;">
+                                                            <%= review.customerEmail %>
+                                                        </p>
+                                                    </div>
+                                                    <!-- Étoiles -->
+                                                    <div class="flex gap-0.5 ml-auto sm:ml-4">
+                                                        <% for (let i=1; i <=5; i++) { %>
+                                                            <svg class="w-4 h-4 <%= i <= review.rating ? 'star-filled' : 'star-empty' %>"
+                                                                fill="currentColor" viewBox="0 0 20 20">
+                                                                <path
+                                                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                            </svg>
+                                                            <% } %>
+                                                    </div>
+                                                </div>
+                                                <!-- Produit -->
+                                                <p style="font-size: 12px; color: #888; margin-bottom: 8px;">
+                                                    Produit : <a href="/boutique/<%= review.product.slug %>"
+                                                        class="text-terracotta hover:underline">
+                                                        <%= review.product.name %>
+                                                    </a>
+                                                    — <span style="color: #bbb;">
+                                                        <%= new Date(review.createdAt).toLocaleDateString('fr-FR', {
+                                                            day: '2-digit' , month: 'long' , year: 'numeric' }) %>
+                                                    </span>
+                                                </p>
+                                                <!-- Commentaire -->
+                                                <div class="review-comment">
+                                                    <%= review.comment %>
+                                                </div>
+                                            </div>
+
+                                            <!-- Actions -->
+                                            <div
+                                                class="flex sm:flex-col gap-2 flex-shrink-0 items-center sm:items-stretch">
+                                                <!-- Statut actuel -->
+                                                <% if (review.status==='pending' ) { %>
+                                                    <span class="badge-pending">⏳ En attente</span>
+                                                    <% } else if (review.status==='approved' ) { %>
+                                                        <span class="badge-approved">✅ Approuvé</span>
+                                                        <% } else { %>
+                                                            <span class="badge-rejected">❌ Rejeté</span>
+                                                            <% } %>
+
+                                                                <% if (review.status !=='approved' ) { %>
+                                                                    <form method="POST"
+                                                                        action="/admin/avis/<%= review.id %>/status"
+                                                                        class="inline">
+                                                                        <input type="hidden" name="status"
+                                                                            value="approved">
+                                                                        <button type="submit"
+                                                                            class="btn-approve w-full">✅
+                                                                            Approuver</button>
+                                                                    </form>
+                                                                    <% } %>
+
+                                                                        <% if (review.status !=='rejected' ) { %>
+                                                                            <form method="POST"
+                                                                                action="/admin/avis/<%= review.id %>/status"
+                                                                                class="inline">
+                                                                                <input type="hidden" name="status"
+                                                                                    value="rejected">
+                                                                                <button type="submit"
+                                                                                    class="btn-reject w-full">❌
+                                                                                    Rejeter</button>
+                                                                            </form>
+                                                                            <% } %>
+
+                                                                                <form method="POST"
+                                                                                    action="/admin/avis/<%= review.id %>/delete"
+                                                                                    onsubmit="return confirm('Supprimer définitivement cet avis ?')"
+                                                                                    class="inline">
+                                                                                    <button type="submit"
+                                                                                        class="btn-delete w-full">🗑️
+                                                                                        Supprimer</button>
+                                                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <% }); %>
+                            </div>
+                            <% } %>
+                </div>
+            </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,373 @@
+<% layout('layouts/main') -%>
+
+    <!-- Breadcrumb -->
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4" aria-label="Fil d'Ariane">
+        <ol class="flex items-center gap-2 text-sm text-brun/50">
+            <li><a href="/" class="hover:text-terracotta transition-colors">Accueil</a></li>
+            <li><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg></li>
+            <li><a href="/boutique" class="hover:text-terracotta transition-colors">Boutique</a></li>
+            <li><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg></li>
+            <li class="text-brun font-medium">
+                <%= product.name %>
+            </li>
+        </ol>
+    </nav>
+
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <!-- Galerie images -->
+            <div x-data="{ mainImage: '<%= getProductImage(product.images, 'large') %>' }" data-aos="fade-right">
+                <!-- Image principale -->
+                <div class="aspect-square rounded-gourmand-lg overflow-hidden bg-creme shadow-warm">
+                    <img src="<%= getProductImage(product.images, 'large') %>" x-bind:src="mainImage"
+                        alt="<%= product.name %>" class="w-full h-full object-cover" id="product-main-image">
+                </div>
+                <!-- Miniatures -->
+                <% const images=parseJsonArray(product.images); %>
+                    <% if (images.length> 1) { %>
+                        <div class="flex gap-3 mt-4 overflow-x-auto pb-2">
+                            <% images.forEach(function(img) { %>
+                                <% const largeImg=getSingleImage(img, 'large' ); %>
+                                    <button @click="mainImage = '<%= largeImg %>'"
+                                        class="flex-shrink-0 w-20 h-20 rounded-gourmand overflow-hidden border-2 transition-colors focus:border-terracotta"
+                                        :class="mainImage === '<%= largeImg %>' ? 'border-terracotta' : 'border-transparent'">
+                                        <img src="<%= getSingleImage(img, 'thumbnail') %>" alt="<%= product.name %>"
+                                            class="w-full h-full object-cover" loading="lazy">
+                                    </button>
+                                    <% }); %>
+                        </div>
+                        <% } %>
+            </div>
+
+            <!-- Détails produit -->
+            <div data-aos="fade-left">
+                <!-- Catégorie -->
+                <a href="/boutique?categorie=<%= product.category.slug %>"
+                    class="text-sm text-vert-the uppercase tracking-wide hover:text-vert-the/80 transition-colors font-medium">
+                    <%= product.category.name %>
+                </a>
+
+                <!-- Titre -->
+                <h1 class="font-display text-3xl sm:text-4xl text-noir-cafe mt-2">
+                    <%= product.name %>
+                </h1>
+
+                <!-- Prix -->
+                <div class="flex items-baseline gap-3 mt-4">
+                    <% if (product.promoPrice) { %>
+                        <span class="text-3xl font-bold text-terracotta">
+                            <%= formatPrice(product.promoPrice) %>
+                        </span>
+                        <span class="text-lg text-brun/40 line-through">
+                            <%= formatPrice(product.price) %>
+                        </span>
+                        <span class="px-3 py-1 bg-terracotta/10 text-terracotta text-sm font-bold rounded-full">-<%=
+                                calculateDiscount(product.price, product.promoPrice) %>%</span>
+                        <% } else { %>
+                            <span class="text-3xl font-bold text-terracotta">
+                                <%= formatPrice(product.price) %>
+                            </span>
+                            <% } %>
+                </div>
+
+                <!-- Stock -->
+                <% const stockStatus=getStockStatus(product.stock, product.stockAlertThreshold); %>
+                    <div class="mt-4">
+                        <% if (stockStatus==='in' ) { %>
+                            <span class="inline-flex items-center gap-1 text-sm text-vert-the"><span
+                                    class="w-2 h-2 rounded-full bg-vert-the animate-pulse"></span> En stock</span>
+                            <% } else if (stockStatus==='low' ) { %>
+                                <span class="inline-flex items-center gap-1 text-sm text-or-doux"><span
+                                        class="w-2 h-2 rounded-full bg-or-doux animate-pulse"></span> Plus que <%=
+                                        product.stock %> en stock</span>
+                                <% } else { %>
+                                    <span class="inline-flex items-center gap-1 text-sm text-rose-macaron-dark"><span
+                                            class="w-2 h-2 rounded-full bg-rose-macaron-dark"></span> Rupture de
+                                        stock</span>
+                                    <% } %>
+                    </div>
+
+                    <!-- Description courte -->
+                    <% if (product.shortDescription) { %>
+                        <p class="text-brun/70 mt-6 leading-relaxed">
+                            <%= product.shortDescription %>
+                        </p>
+                        <% } %>
+
+                            <!-- Ajouter au panier -->
+                            <% if (stockStatus !=='out' ) { %>
+                                <div class="flex items-center gap-4 mt-8" x-data="{ quantity: 1 }">
+                                    <div class="flex items-center border border-creme rounded-gourmand">
+                                        <button type="button" @click="if (quantity > 1) quantity--"
+                                            class="w-12 h-12 flex items-center justify-center text-lg hover:bg-creme transition-colors rounded-l-gourmand">−</button>
+                                        <input type="number" x-model.number="quantity" min="1"
+                                            max="<%= product.stock %>"
+                                            class="w-16 h-12 text-center border-x border-creme outline-none bg-transparent font-medium"
+                                            id="product-qty">
+                                        <button type="button" @click="if (quantity < <%= product.stock %>) quantity++"
+                                            class="w-12 h-12 flex items-center justify-center text-lg hover:bg-creme transition-colors rounded-r-gourmand">+</button>
+                                    </div>
+                                    <button type="button" @click="$store.cart.addItem('<%= product.id %>', quantity)"
+                                        class="flex-1 py-3 bg-terracotta text-blanc-casse font-medium rounded-gourmand hover:bg-terracotta-dark transition-all shadow-warm hover:shadow-warm-lg active:scale-[0.98]">
+                                        Ajouter au panier
+                                    </button>
+                                </div>
+                                <% } else { %>
+                                    <div class="mt-8 py-4 px-6 bg-creme rounded-gourmand text-center">
+                                        <p class="text-brun/60 font-medium">Ce produit est actuellement indisponible</p>
+                                    </div>
+                                    <% } %>
+
+                                        <!-- Détails produit (accordéon) -->
+                                        <div class="mt-10 border-t border-creme pt-6 space-y-4">
+                                            <% if (product.longDescription) { %>
+                                                <details class="group" open>
+                                                    <summary
+                                                        class="flex items-center justify-between cursor-pointer py-2 font-medium text-brun hover:text-terracotta transition-colors">
+                                                        Description complète
+                                                        <svg class="w-5 h-5 transition-transform group-open:rotate-180"
+                                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                        </svg>
+                                                    </summary>
+                                                    <div
+                                                        class="text-sm text-brun/70 leading-relaxed pt-2 prose prose-sm">
+                                                        <%- product.longDescription %>
+                                                    </div>
+                                                </details>
+                                                <% } %>
+
+                                                    <% if (product.ingredients) { %>
+                                                        <details class="group border-t border-creme">
+                                                            <summary
+                                                                class="flex items-center justify-between cursor-pointer py-2 font-medium text-brun hover:text-terracotta transition-colors">
+                                                                Ingrédients
+                                                                <svg class="w-5 h-5 transition-transform group-open:rotate-180"
+                                                                    fill="none" stroke="currentColor"
+                                                                    viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                                        stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                                </svg>
+                                                            </summary>
+                                                            <p class="text-sm text-brun/70 pt-2">
+                                                                <%= product.ingredients %>
+                                                            </p>
+                                                        </details>
+                                                        <% } %>
+
+                                                            <% if (product.preparationTips) { %>
+                                                                <details class="group border-t border-creme">
+                                                                    <summary
+                                                                        class="flex items-center justify-between cursor-pointer py-2 font-medium text-brun hover:text-terracotta transition-colors">
+                                                                        Conseils de préparation
+                                                                        <svg class="w-5 h-5 transition-transform group-open:rotate-180"
+                                                                            fill="none" stroke="currentColor"
+                                                                            viewBox="0 0 24 24">
+                                                                            <path stroke-linecap="round"
+                                                                                stroke-linejoin="round" stroke-width="2"
+                                                                                d="M19 9l-7 7-7-7" />
+                                                                        </svg>
+                                                                    </summary>
+                                                                    <p class="text-sm text-brun/70 pt-2">
+                                                                        <%= product.preparationTips %>
+                                                                    </p>
+                                                                </details>
+                                                                <% } %>
+
+                                                                    <% if (product.allergens) { %>
+                                                                        <details class="group border-t border-creme">
+                                                                            <summary
+                                                                                class="flex items-center justify-between cursor-pointer py-2 font-medium text-brun hover:text-terracotta transition-colors">
+                                                                                Allergènes
+                                                                                <svg class="w-5 h-5 transition-transform group-open:rotate-180"
+                                                                                    fill="none" stroke="currentColor"
+                                                                                    viewBox="0 0 24 24">
+                                                                                    <path stroke-linecap="round"
+                                                                                        stroke-linejoin="round"
+                                                                                        stroke-width="2"
+                                                                                        d="M19 9l-7 7-7-7" />
+                                                                                </svg>
+                                                                            </summary>
+                                                                            <p class="text-sm text-brun/70 pt-2">
+                                                                                <%= product.allergens %>
+                                                                            </p>
+                                                                        </details>
+                                                                        <% } %>
+
+                                                                            <% if (product.weight) { %>
+                                                                                <div
+                                                                                    class="border-t border-creme pt-2 text-sm text-brun/50">
+                                                                                    Poids : <%= product.weight %>
+                                                                                </div>
+                                                                                <% } %>
+                                        </div>
+
+                                        <!-- Engagements (icônes) -->
+                                        <div class="grid grid-cols-3 gap-4 mt-8 bg-creme rounded-gourmand-lg p-4">
+                                            <div class="text-center"><span class="text-xl">🚚</span>
+                                                <p class="text-xs text-brun/60 mt-1">Livraison<br>rapide</p>
+                                            </div>
+                                            <div class="text-center"><span class="text-xl">🔒</span>
+                                                <p class="text-xs text-brun/60 mt-1">Paiement<br>sécurisé</p>
+                                            </div>
+                                            <div class="text-center"><span class="text-xl">📞</span>
+                                                <p class="text-xs text-brun/60 mt-1">Service<br>client</p>
+                                            </div>
+                                        </div>
+            </div>
+        </div>
+
+        <!-- Avis clients -->
+        <section class="mt-16" data-aos="fade-up">
+            <div class="text-center mb-10">
+                <h2 class="font-display text-2xl text-noir-cafe">Avis clients</h2>
+                <div class="flex items-center justify-center gap-4 mt-3">
+                    <div class="h-px w-16 bg-terracotta/30"></div><span class="text-terracotta">⭐</span>
+                    <div class="h-px w-16 bg-terracotta/30"></div>
+                </div>
+            </div>
+
+            <% if (typeof reviewSubmitted !=='undefined' && reviewSubmitted) { %>
+                <div class="bg-vert-the/10 border border-vert-the/30 rounded-gourmand-lg p-4 mb-8 text-center">
+                    <p class="text-sm font-medium" style="color: #2d6a4f;">✅ Merci pour votre avis ! Il sera publié
+                        après modération.</p>
+                </div>
+                <% } %>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-5 gap-10">
+                        <!-- Avis existants -->
+                        <div class="lg:col-span-3">
+                            <% if (reviews && reviews.length> 0) { %>
+                                <div class="space-y-6">
+                                    <% reviews.forEach(function(review) { %>
+                                        <div class="bg-blanc-casse rounded-gourmand-lg p-6 shadow-card">
+                                            <div class="flex items-center justify-between mb-3">
+                                                <div>
+                                                    <p class="font-medium text-noir-cafe">
+                                                        <%= review.customerName %>
+                                                    </p>
+                                                    <p class="text-xs" style="color: #999;">
+                                                        <%= new Date(review.createdAt).toLocaleDateString('fr-FR', {
+                                                            year: 'numeric' , month: 'long' , day: 'numeric' }) %>
+                                                    </p>
+                                                </div>
+                                                <div class="flex gap-0.5">
+                                                    <% for (let i=1; i <=5; i++) { %>
+                                                        <% if (i <=review.rating) { %>
+                                                            <svg class="w-5 h-5 text-or-doux" fill="currentColor"
+                                                                viewBox="0 0 20 20">
+                                                                <path
+                                                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                            </svg>
+                                                            <% } else { %>
+                                                                <svg class="w-5 h-5" style="color: #ddd;"
+                                                                    fill="currentColor" viewBox="0 0 20 20">
+                                                                    <path
+                                                                        d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                                </svg>
+                                                                <% } %>
+                                                                    <% } %>
+                                                </div>
+                                            </div>
+                                            <p class="text-sm leading-relaxed" style="color: #555;">
+                                                <%= review.comment %>
+                                            </p>
+                                        </div>
+                                        <% }); %>
+                                </div>
+                                <% } else { %>
+                                    <div class="bg-blanc-casse rounded-gourmand-lg p-8 text-center shadow-card">
+                                        <p class="text-2xl mb-2">💬</p>
+                                        <p class="text-sm" style="color: #888;">Aucun avis pour ce produit. Soyez le
+                                            premier à donner votre avis !</p>
+                                    </div>
+                                    <% } %>
+                        </div>
+
+                        <!-- Formulaire d'avis -->
+                        <div class="lg:col-span-2">
+                            <div class="bg-blanc-casse rounded-gourmand-lg p-6 shadow-card sticky top-6">
+                                <h3 class="font-display text-lg text-noir-cafe mb-4">Laisser un avis</h3>
+                                <form method="POST" action="/boutique/<%= product.slug %>/avis" class="space-y-4">
+                                    <!-- Honeypot anti-spam (caché aux vrais utilisateurs) -->
+                                    <div style="position: absolute; left: -9999px; opacity: 0; height: 0; overflow: hidden;"
+                                        aria-hidden="true">
+                                        <label for="website">Ne pas remplir</label>
+                                        <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+                                    </div>
+                                    <div>
+                                        <label for="review-name" class="block text-sm font-medium mb-1"
+                                            style="color: #333;">Votre nom *</label>
+                                        <input type="text" id="review-name" name="customerName" required minlength="2"
+                                            maxlength="100"
+                                            class="w-full px-4 py-2.5 rounded-gourmand border border-creme focus:border-terracotta focus:ring-2 focus:ring-terracotta/20 outline-none transition-all bg-creme/30 text-sm"
+                                            placeholder="Marie D.">
+                                    </div>
+                                    <div>
+                                        <label for="review-email" class="block text-sm font-medium mb-1"
+                                            style="color: #333;">Votre email *</label>
+                                        <input type="email" id="review-email" name="customerEmail" required
+                                            class="w-full px-4 py-2.5 rounded-gourmand border border-creme focus:border-terracotta focus:ring-2 focus:ring-terracotta/20 outline-none transition-all bg-creme/30 text-sm"
+                                            placeholder="marie@exemple.fr">
+                                        <p class="text-xs mt-1" style="color: #999;">Ne sera pas affiché publiquement
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-2" style="color: #333;">Note
+                                            *</label>
+                                        <div class="flex gap-1" id="star-rating">
+                                            <% for (let i=1; i <=5; i++) { %>
+                                                <label class="cursor-pointer">
+                                                    <input type="radio" name="rating" value="<%= i %>" class="sr-only"
+                                                        required>
+                                                    <svg class="w-8 h-8 star-icon transition-colors"
+                                                        style="color: #ddd;" fill="currentColor" viewBox="0 0 20 20"
+                                                        data-value="<%= i %>">
+                                                        <path
+                                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                    </svg>
+                                                </label>
+                                                <% } %>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label for="review-comment" class="block text-sm font-medium mb-1"
+                                            style="color: #333;">Votre avis *</label>
+                                        <textarea id="review-comment" name="comment" required rows="4" minlength="10"
+                                            maxlength="2000"
+                                            class="w-full px-4 py-2.5 rounded-gourmand border border-creme focus:border-terracotta focus:ring-2 focus:ring-terracotta/20 outline-none transition-all bg-creme/30 text-sm resize-none"
+                                            placeholder="Partagez votre expérience..."></textarea>
+                                    </div>
+                                    <button type="submit"
+                                        class="w-full py-3 bg-terracotta text-blanc-casse font-medium rounded-gourmand hover:bg-terracotta-dark transition-all shadow-warm text-sm">
+                                        Envoyer mon avis
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+        </section>
+        <!-- Suggestions -->
+        <% if (suggestions.length> 0) { %>
+            <section class="mt-20">
+                <div class="text-center mb-10">
+                    <h2 class="font-display text-2xl text-noir-cafe">Vous aimerez aussi</h2>
+                    <div class="flex items-center justify-center gap-4 mt-3">
+                        <div class="h-px w-16 bg-terracotta/30"></div><span class="text-terracotta">🍵</span>
+                        <div class="h-px w-16 bg-terracotta/30"></div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <% suggestions.forEach(function(product) { %>
+                        <%- include('../partials/product-card', { product, formatPrice, getProductImage,
+                            calculateDiscount, getStockStatus, parseJsonArray }) %>
+                            <% }); %>
+                </div>
+            </section>
+            <% } %>
+    </section>

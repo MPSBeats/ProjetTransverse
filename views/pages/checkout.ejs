@@ -1,0 +1,169 @@
+<% layout('layouts/main') -%>
+
+    <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h1 class="font-display text-3xl text-noir-cafe mb-8" data-aos="fade-up">Finaliser votre commande</h1>
+
+        <form method="POST" action="/checkout" class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+            <!-- Formulaire (3 cols) -->
+            <div class="lg:col-span-3 space-y-6" data-aos="fade-right">
+                <!-- Coordonnées -->
+                <div class="bg-blanc-casse rounded-gourmand-lg p-6 shadow-card">
+                    <h2 class="font-display text-xl text-noir-cafe mb-4">Vos coordonnées</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="customerName" class="block text-sm font-medium text-brun mb-1">Nom complet
+                                *</label>
+                            <input type="text" id="customerName" name="customerName" required
+                                class="w-full px-4 py-3 rounded-gourmand border border-creme focus:border-terracotta focus:ring-2 focus:ring-terracotta/20 outline-none transition-all bg-creme/30">
+                        </div>
+                        <div>
+                            <label for="customerEmail" class="block text-sm font-medium text-brun mb-1">Email *</label>
+                            <input type="email" id="customerEmail" name="customerEmail" required
+                                class="w-full px-4 py-3 rounded-gourmand border border-creme focus:border-terracotta focus:ring-2 focus:ring-terracotta/20 outline-none transition-all bg-creme/30">
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <label for="customerPhone" class="block text-sm font-medium text-brun mb-1">Téléphone</label>
+                        <input type="tel" id="customerPhone" name="customerPhone"
+                            class="w-full px-4 py-3 rounded-gourmand border border-creme focus:border-terracotta focus:ring-2 focus:ring-terracotta/20 outline-none transition-all bg-creme/30">
+                    </div>
+                </div>
+
+                <!-- Mode de livraison -->
+                <div class="bg-blanc-casse rounded-gourmand-lg p-6 shadow-card" x-data="{ delivery: 'pickup' }">
+                    <h2 class="font-display text-xl text-noir-cafe mb-4">Mode de livraison</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <label
+                            class="relative flex items-center gap-3 p-4 rounded-gourmand border-2 cursor-pointer transition-all"
+                            :class="delivery === 'pickup' ? 'border-terracotta bg-terracotta/5' : 'border-creme hover:border-brun/30'">
+                            <input type="radio" name="deliveryMethod" value="pickup" x-model="delivery" class="sr-only">
+                            <span class="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0"
+                                :class="delivery === 'pickup' ? 'border-terracotta' : 'border-brun/30'">
+                                <span class="w-2.5 h-2.5 rounded-full bg-terracotta"
+                                    x-show="delivery === 'pickup'"></span>
+                            </span>
+                            <div>
+                                <span class="font-medium text-sm text-brun">Retrait en boutique</span>
+                                <span class="block text-xs text-vert-the font-medium mt-0.5">Gratuit</span>
+                            </div>
+                        </label>
+                        <label
+                            class="relative flex items-center gap-3 p-4 rounded-gourmand border-2 cursor-pointer transition-all"
+                            :class="delivery === 'delivery' ? 'border-terracotta bg-terracotta/5' : 'border-creme hover:border-brun/30'">
+                            <input type="radio" name="deliveryMethod" value="delivery" x-model="delivery"
+                                class="sr-only">
+                            <span class="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0"
+                                :class="delivery === 'delivery' ? 'border-terracotta' : 'border-brun/30'">
+                                <span class="w-2.5 h-2.5 rounded-full bg-terracotta"
+                                    x-show="delivery === 'delivery'"></span>
+                            </span>
+                            <div>
+                                <span class="font-medium text-sm text-brun">Livraison à domicile</span>
+                                <span class="block text-xs text-brun/50 mt-0.5">À partir de 4,90 €</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Adresse de livraison -->
+                    <div x-show="delivery === 'delivery'" x-transition class="mt-4 space-y-4" style="display: none;">
+                        <div>
+                            <label for="shippingAddress" class="block text-sm font-medium text-brun mb-1">Adresse
+                                *</label>
+                            <input type="text" id="shippingAddress" name="shippingAddress"
+                                class="w-full px-4 py-3 rounded-gourmand border border-creme focus:border-terracotta outline-none transition-all bg-creme/30">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="shippingPostalCode" class="block text-sm font-medium text-brun mb-1">Code
+                                    postal *</label>
+                                <input type="text" id="shippingPostalCode" name="shippingPostalCode"
+                                    class="w-full px-4 py-3 rounded-gourmand border border-creme focus:border-terracotta outline-none transition-all bg-creme/30">
+                            </div>
+                            <div>
+                                <label for="shippingCity" class="block text-sm font-medium text-brun mb-1">Ville
+                                    *</label>
+                                <input type="text" id="shippingCity" name="shippingCity"
+                                    class="w-full px-4 py-3 rounded-gourmand border border-creme focus:border-terracotta outline-none transition-all bg-creme/30">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Retrait boutique info -->
+                    <div x-show="delivery === 'pickup'" class="mt-4 bg-creme rounded-gourmand p-4" x-transition>
+                        <p class="text-sm text-brun/70">📍 <strong>L'InviThé Gourmand</strong> — 64, rue d'Alésia, 75014
+                            Paris</p>
+                        <p class="text-xs text-brun/50 mt-1">Commande prête sous 24h. Vous serez notifié par email.</p>
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div class="bg-blanc-casse rounded-gourmand-lg p-6 shadow-card">
+                    <label for="notes" class="block text-sm font-medium text-brun mb-1">Notes (optionnel)</label>
+                    <textarea id="notes" name="notes" rows="3"
+                        placeholder="Instructions spéciales, allergies, message cadeau..."
+                        class="w-full px-4 py-3 rounded-gourmand border border-creme focus:border-terracotta outline-none transition-all bg-creme/30 resize-none"></textarea>
+                </div>
+            </div>
+
+            <!-- Résumé commande (2 cols) -->
+            <div class="lg:col-span-2" data-aos="fade-left">
+                <div class="bg-blanc-casse rounded-gourmand-lg p-6 shadow-card sticky top-24">
+                    <h2 class="font-display text-xl text-noir-cafe mb-4">Votre commande</h2>
+                    <div class="space-y-3 max-h-64 overflow-y-auto">
+                        <% cart.items.forEach(function(item) { %>
+                            <div class="flex items-center gap-3 py-2">
+                                <img src="<%= item.image %>" alt="<%= item.name %>"
+                                    class="w-12 h-12 rounded-gourmand object-cover">
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-brun line-clamp-1">
+                                        <%= item.name %>
+                                    </p>
+                                    <p class="text-xs text-brun/50">x<%= item.quantity %>
+                                    </p>
+                                </div>
+                                <span class="text-sm font-medium text-terracotta">
+                                    <%= formatPrice((item.promoPrice || item.price) * item.quantity) %>
+                                </span>
+                            </div>
+                            <% }); %>
+                    </div>
+
+                    <div class="border-t border-creme mt-4 pt-4 space-y-2">
+                        <div class="flex justify-between text-sm"><span>Sous-total</span><span>
+                                <%= formatPrice(cart.subtotal) %>
+                            </span></div>
+                        <% if (cart.discount> 0) { %>
+                            <div class="flex justify-between text-sm text-vert-the"><span>Réduction</span><span>-<%=
+                                        formatPrice(cart.discount) %></span></div>
+                            <% } %>
+                                <div class="flex justify-between text-sm text-brun/50"><span>Frais de
+                                        port</span><span>Voir ci-contre</span></div>
+                                <div
+                                    class="flex justify-between font-display text-lg text-noir-cafe pt-2 border-t border-creme">
+                                    <span>Total estimé</span>
+                                    <span class="text-terracotta">
+                                        <%= formatPrice(cart.subtotal - cart.discount) %>
+                                    </span>
+                                </div>
+                    </div>
+
+                    <button type="submit"
+                        class="w-full mt-6 py-4 bg-terracotta text-blanc-casse font-medium rounded-gourmand hover:bg-terracotta-dark transition-all shadow-warm text-lg flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        Payer avec Stripe
+                    </button>
+
+                    <div class="mt-4 flex items-center justify-center gap-2 text-xs text-brun/40">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                        Paiement sécurisé — CB, Apple Pay, Google Pay
+                    </div>
+                </div>
+            </div>
+        </form>
+    </section>

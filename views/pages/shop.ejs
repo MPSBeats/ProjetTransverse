@@ -1,0 +1,112 @@
+<% layout('layouts/main') -%>
+
+    <!-- Breadcrumb -->
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4" aria-label="Fil d'Ariane">
+        <ol class="flex items-center gap-2 text-sm text-brun/50">
+            <li><a href="/" class="hover:text-terracotta transition-colors">Accueil</a></li>
+            <li><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg></li>
+            <li class="text-brun font-medium">Boutique</li>
+        </ol>
+    </nav>
+
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+        <!-- En-tête -->
+        <div class="text-center py-8">
+            <h1 class="font-display text-4xl text-noir-cafe" data-aos="fade-up">Notre Boutique</h1>
+            <p class="font-accent italic text-brun/60 mt-2" data-aos="fade-up" data-aos-delay="100">
+                <%= total %> produit<%= total> 1 ? 's' : '' %>
+            </p>
+        </div>
+
+        <!-- Barre de filtres -->
+        <div class="bg-blanc-casse rounded-gourmand-lg p-4 shadow-card mb-8" data-aos="fade-up">
+            <form id="shop-filters" method="GET" action="/boutique"
+                class="flex flex-col lg:flex-row gap-4 items-center">
+                <!-- Recherche -->
+                <div class="relative flex-1 w-full">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brun/40" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input type="text" name="recherche" value="<%= currentSearch %>"
+                        placeholder="Rechercher un produit..."
+                        class="w-full pl-10 pr-4 py-3 rounded-gourmand border border-creme bg-creme/50 focus:bg-blanc-casse focus:border-terracotta focus:ring-2 focus:ring-terracotta/20 outline-none transition-all text-sm"
+                        oninput="clearTimeout(this._t); this._t = setTimeout(() => this.form.submit(), 400)">
+                </div>
+
+                <!-- Catégorie -->
+                <select name="categorie" onchange="this.form.submit()"
+                    class="w-full lg:w-48 py-3 px-4 rounded-gourmand border border-creme bg-creme/50 focus:border-terracotta outline-none text-sm appearance-none cursor-pointer">
+                    <option value="">Toutes catégories</option>
+                    <% categories.forEach(function(cat) { %>
+                        <option value="<%= cat.slug %>" <%=currentCategory===cat.slug ? 'selected' : '' %>><%= cat.name
+                                %>
+                        </option>
+                        <% }); %>
+                </select>
+
+                <!-- Tri -->
+                <select name="tri" onchange="this.form.submit()"
+                    class="w-full lg:w-44 py-3 px-4 rounded-gourmand border border-creme bg-creme/50 focus:border-terracotta outline-none text-sm appearance-none cursor-pointer">
+                    <option value="nouveautes" <%=currentSort==='nouveautes' ? 'selected' : '' %>>Nouveautés</option>
+                    <option value="prix_asc" <%=currentSort==='prix_asc' ? 'selected' : '' %>>Prix croissant</option>
+                    <option value="prix_desc" <%=currentSort==='prix_desc' ? 'selected' : '' %>>Prix décroissant
+                    </option>
+                    <option value="nom" <%=currentSort==='nom' ? 'selected' : '' %>>Nom A-Z</option>
+                </select>
+            </form>
+        </div>
+
+        <!-- Résultats -->
+        <% if (products.length===0) { %>
+            <div class="text-center py-20">
+                <svg class="w-20 h-20 mx-auto text-brun/20 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <h2 class="font-display text-2xl text-brun/40">Aucun produit trouvé</h2>
+                <p class="text-brun/40 mt-2">Essayez de modifier vos filtres ou votre recherche.</p>
+                <a href="/boutique"
+                    class="inline-block mt-6 px-6 py-3 bg-terracotta text-blanc-casse rounded-gourmand font-medium hover:bg-terracotta-dark transition-colors">Voir
+                    tous les produits</a>
+            </div>
+            <% } else { %>
+                <!-- Grille produits -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <% products.forEach(function(product) { %>
+                        <%- include('../partials/product-card', { product, formatPrice, getProductImage,
+                            calculateDiscount, getStockStatus, parseJsonArray }) %>
+                            <% }); %>
+                </div>
+
+                <!-- Pagination -->
+                <% if (totalPages> 1) { %>
+                    <nav class="flex items-center justify-center gap-2 mt-12" aria-label="Pagination">
+                        <% if (page> 1) { %>
+                            <a href="/boutique?page=<%= page - 1 %>&categorie=<%= currentCategory %>&tri=<%= currentSort %>&recherche=<%= currentSearch %>"
+                                class="px-4 py-2 rounded-gourmand border border-creme hover:border-terracotta text-sm transition-colors">
+                                ← Précédent
+                            </a>
+                            <% } %>
+
+                                <% for (let i=1; i <=totalPages; i++) { %>
+                                    <a href="/boutique?page=<%= i %>&categorie=<%= currentCategory %>&tri=<%= currentSort %>&recherche=<%= currentSearch %>"
+                                        class="w-10 h-10 flex items-center justify-center rounded-full text-sm transition-colors
+                    <%= i === page ? 'bg-terracotta text-blanc-casse' : 'hover:bg-creme text-brun' %>">
+                                        <%= i %>
+                                    </a>
+                                    <% } %>
+
+                                        <% if (page < totalPages) { %>
+                                            <a href="/boutique?page=<%= page + 1 %>&categorie=<%= currentCategory %>&tri=<%= currentSort %>&recherche=<%= currentSearch %>"
+                                                class="px-4 py-2 rounded-gourmand border border-creme hover:border-terracotta text-sm transition-colors">
+                                                Suivant →
+                                            </a>
+                                            <% } %>
+                    </nav>
+                    <% } %>
+                        <% } %>
+    </section>

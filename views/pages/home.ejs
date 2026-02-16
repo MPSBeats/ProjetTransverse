@@ -1,0 +1,379 @@
+<% layout('layouts/main') -%>
+
+    <!-- ═══════ HERO SECTION ═══════ -->
+    <section class="relative h-[90vh] min-h-[600px] flex items-center overflow-hidden">
+        <!-- Image de fond avec parallaxe -->
+        <div class="absolute inset-0 z-0 bg-noir-cafe">
+            <div class="absolute inset-0 bg-gradient-to-r from-noir-cafe/70 via-noir-cafe/40 to-transparent z-10"></div>
+            <img src="/images/categories/thes.jpg" alt="Hero Background"
+                class="w-full h-full object-cover absolute inset-0 z-0" id="hero-bg-current">
+            <img src="" alt="Hero Background Next"
+                class="w-full h-full object-cover absolute inset-0 z-0 opacity-0 transition-opacity duration-1000"
+                id="hero-bg-next">
+            <!-- Texture grain -->
+            <div class="absolute inset-0 z-20 opacity-[0.03] bg-repeat"
+                style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noise)%22/%3E%3C/svg%3E');">
+            </div>
+        </div>
+
+        <div class="relative z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-2xl">
+                <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl text-creme leading-tight" data-aos="fade-up"
+                    data-aos-duration="800">
+                    <span class="inline-flex flex-wrap items-baseline">
+                        <span class="mr-4">L'art&nbsp;</span>
+                        <span id="dynamic-text-container"
+                            class="inline-flex relative h-[1.2em] overflow-hidden align-bottom">
+                            <span id="dynamic-text" class="inline-block transform transition-transform duration-500">du
+                                thé</span>
+                        </span>,
+                    </span><br>
+                    <span class="text-or-doux">le plaisir du goût</span>
+                </h1>
+                <p class="font-accent italic text-lg sm:text-xl text-creme/80 mt-4" data-aos="fade-up"
+                    data-aos-delay="200">
+                    Salon de thé, macarons artisanaux &amp; douceurs — Paris 14<sup>e</sup>
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 mt-8" data-aos="fade-up" data-aos-delay="400">
+                    <a href="/menu"
+                        class="inline-flex items-center justify-center px-8 py-4 bg-terracotta text-blanc-casse font-medium rounded-gourmand hover:bg-terracotta-dark transition-all shadow-warm hover:shadow-warm-lg hover:-translate-y-0.5 text-center">
+                        Découvrir notre carte
+                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                    </a>
+                    <a href="/boutique"
+                        class="inline-flex items-center justify-center px-8 py-4 border-2 border-creme/40 text-creme font-medium rounded-gourmand hover:bg-creme/10 transition-all text-center">
+                        Commander en ligne
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scroll indicator -->
+        <a href="#engagements"
+            class="absolute bottom-8 left-1/2 -translate-x-1/2 z-40 animate-bounce cursor-pointer group p-4"
+            aria-label="Défiler vers le bas">
+            <svg class="w-6 h-6 text-creme/60 group-hover:text-creme transition-colors" fill="none"
+                stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            </svg>
+        </a>
+    </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const items = [
+                { text: "du thé", image: "/images/categories/thes.jpg" },
+                { text: "du café", image: "/images/categories/cafes.jpg" },
+                { text: "du macaron", image: "/images/categories/macarons.jpg" },
+                { text: "de la pâtisserie", image: "/images/categories/patisseries-luxe.jpg" },
+                { text: "du cadeau", image: "/images/categories/cadeau-luxe.jpg" }
+            ];
+
+            let currentIndex = 0;
+            const textElement = document.getElementById('dynamic-text');
+            const bgImageCurrent = document.getElementById('hero-bg-current');
+            const bgImageNext = document.getElementById('hero-bg-next');
+
+            // Preload images
+            items.forEach(item => {
+                const img = new Image();
+                img.src = item.image;
+            });
+
+            setInterval(() => {
+                const nextIndex = (currentIndex + 1) % items.length;
+                const nextItem = items[nextIndex];
+
+                // 1. Prepare next background (hidden)
+                bgImageNext.src = nextItem.image;
+
+                // 2. Animate Text (Slide Down Exit)
+                textElement.style.transform = 'translateY(20px)';
+                textElement.style.opacity = '0';
+
+                setTimeout(() => {
+                    // Update text content
+                    textElement.innerText = nextItem.text;
+                    // Reset position for entry (Slide Down Enter)
+                    textElement.style.transform = 'translateY(-20px)';
+
+                    setTimeout(() => {
+                        // Animate Text In
+                        textElement.style.transform = 'translateY(0)';
+                        textElement.style.opacity = '1';
+                    }, 50);
+
+                    // 3. Fade Over Background (Next Image fades IN over Current)
+                    bgImageNext.classList.remove('opacity-0');
+
+                    // Swap logic after transition complete (1s)
+                    setTimeout(() => {
+                        bgImageCurrent.src = nextItem.image;
+                        // Reset Next for next time (make it invisible again, but since it matches Current, no visual change)
+                        bgImageNext.classList.add('opacity-0');
+                        currentIndex = nextIndex;
+                    }, 1000);
+                }, 400);
+
+            }, 4000);
+        });
+    </script>
+
+    <!-- ═══════ ENGAGEMENTS ═══════ -->
+    <section id="engagements" class="py-8 bg-blanc-casse border-y border-creme">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="flex items-center gap-3 justify-center" data-aos="fade-up" data-aos-delay="0">
+                    <span class="text-2xl">🍃</span>
+                    <span class="text-sm font-medium text-brun">Thés bio sélectionnés</span>
+                </div>
+                <div class="flex items-center gap-3 justify-center" data-aos="fade-up" data-aos-delay="100">
+                    <span class="text-2xl">🧁</span>
+                    <span class="text-sm font-medium text-brun">100% fait maison</span>
+                </div>
+                <div class="flex items-center gap-3 justify-center" data-aos="fade-up" data-aos-delay="200">
+                    <span class="text-2xl">🚀</span>
+                    <span class="text-sm font-medium text-brun">Livraison rapide</span>
+                </div>
+                <div class="flex items-center gap-3 justify-center" data-aos="fade-up" data-aos-delay="300">
+                    <span class="text-2xl">❤️</span>
+                    <span class="text-sm font-medium text-brun">Avec amour depuis 2022</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════ COUPS DE CŒUR ═══════ -->
+    <section class="py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Titre avec séparateur décoratif -->
+            <div class="text-center mb-12">
+                <span class="text-terracotta text-sm font-medium uppercase tracking-widest" data-aos="fade-up">Notre
+                    sélection</span>
+                <h2 class="font-display text-3xl sm:text-4xl text-noir-cafe mt-2" data-aos="fade-up"
+                    data-aos-delay="100">Coups de cœur</h2>
+                <!-- Séparateur feuille de thé -->
+                <div class="flex items-center justify-center gap-4 mt-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="h-px w-16 bg-terracotta/30"></div>
+                    <span class="text-terracotta">🍵</span>
+                    <div class="h-px w-16 bg-terracotta/30"></div>
+                </div>
+            </div>
+
+            <!-- Grille produits -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <% featuredProducts.forEach(function(product, index) { %>
+                    <%- include('../partials/product-card', { product, formatPrice, getProductImage, calculateDiscount,
+                        getStockStatus, parseJsonArray }) %>
+                        <% }); %>
+            </div>
+
+            <div class="text-center mt-12" data-aos="fade-up">
+                <a href="/boutique"
+                    class="inline-flex items-center gap-2 px-8 py-3 border-2 border-terracotta text-terracotta font-medium rounded-gourmand hover:bg-terracotta hover:text-blanc-casse transition-all">
+                    Voir toute la boutique
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════ NOTRE SALON ═══════ -->
+    <section class="py-20 bg-blanc-casse">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-12 items-center">
+                <!-- Image -->
+                <div class="lg:col-span-3" data-aos="fade-right">
+                    <div class="relative rounded-gourmand-lg overflow-hidden shadow-warm-lg">
+                        <img src="/images/salon-interieur.jpg"
+                            alt="L'intérieur chaleureux de notre salon de thé parisien"
+                            class="w-full h-[400px] lg:h-[500px] object-cover" loading="lazy">
+                        <div
+                            class="absolute bottom-6 left-6 bg-blanc-casse/90 backdrop-blur-sm rounded-gourmand px-5 py-3 shadow-warm">
+                            <p class="font-accent italic text-sm text-brun">📍 64, rue d'Alésia — Paris 14<sup>e</sup>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Texte -->
+                <div class="lg:col-span-2" data-aos="fade-left">
+                    <span class="text-terracotta text-sm font-medium uppercase tracking-widest">Notre histoire</span>
+                    <h2 class="font-display text-3xl text-noir-cafe mt-2 mb-6">Un écrin de douceur à Paris</h2>
+                    <div class="space-y-4 text-brun/80 leading-relaxed">
+                        <p>
+                            Niché au cœur du 14<sup>e</sup> arrondissement, <strong class="text-brun">L'InviThé
+                                Gourmand</strong> est un havre de paix où le temps s'arrête autour d'une tasse fumante.
+                        </p>
+                        <p>
+                            Nos thés, sélectionnés avec passion auprès de producteurs bio, voyagent du Japon à l'Inde en
+                            passant par la Chine et l'Afrique du Sud. Nos macarons et pâtisseries, préparés chaque matin
+                            dans notre atelier, célèbrent le savoir-faire artisanal français.
+                        </p>
+                        <p>
+                            Que vous cherchiez un moment de sérénité, un goûter gourmand ou un cadeau d'exception, vous
+                            trouverez ici un accueil chaleureux et des saveurs inoubliables.
+                        </p>
+                    </div>
+                    <a href="/menu"
+                        class="inline-flex items-center gap-2 mt-8 text-terracotta font-medium hover:text-terracotta-dark transition-colors group">
+                        Découvrir notre carte
+                        <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════ CATÉGORIES ═══════ -->
+    <section class="py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <span class="text-vert-the text-sm font-medium uppercase tracking-widest"
+                    data-aos="fade-up">Explorer</span>
+                <h2 class="font-display text-3xl sm:text-4xl text-noir-cafe mt-2" data-aos="fade-up"
+                    data-aos-delay="100">Nos Univers</h2>
+                <div class="flex items-center justify-center gap-4 mt-4" data-aos="fade-up">
+                    <div class="h-px w-16 bg-vert-the/30"></div><span class="text-vert-the">🌿</span>
+                    <div class="h-px w-16 bg-vert-the/30"></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 lg:grid-cols-3 gap-6">
+                <% categories.forEach(function(cat, i) { %>
+                    <a href="/boutique?categorie=<%= cat.slug %>"
+                        class="group relative aspect-[4/3] rounded-gourmand-lg overflow-hidden shadow-card hover:shadow-card-hover transition-all"
+                        data-aos="fade-up" data-aos-delay="<%= i * 100 %>">
+                        <img src="<%= cat.imageUrl || '/images/categories/default.jpg' %>" alt="<%= cat.name %>"
+                            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                            loading="lazy">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-t from-noir-cafe/70 via-noir-cafe/20 to-transparent">
+                        </div>
+                        <div class="absolute bottom-0 left-0 right-0 p-5">
+                            <h3 class="font-display text-xl text-creme group-hover:text-or-doux transition-colors">
+                                <%= cat.name %>
+                            </h3>
+                            <% if (cat.description) { %>
+                                <p class="text-xs text-creme/60 mt-1">
+                                    <%= cat.description %>
+                                </p>
+                                <% } %>
+                        </div>
+                    </a>
+                    <% }); %>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════ TÉMOIGNAGES ═══════ -->
+    <section class="py-20 bg-blanc-casse">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <span class="text-rose-macaron-dark text-sm font-medium uppercase tracking-widest"
+                    data-aos="fade-up">Ils nous adorent</span>
+                <h2 class="font-display text-3xl sm:text-4xl text-noir-cafe mt-2" data-aos="fade-up"
+                    data-aos-delay="100">Avis de nos clients</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Témoignage 1 -->
+                <div class="bg-creme rounded-gourmand-lg p-8 shadow-card relative" data-aos="fade-up"
+                    data-aos-delay="0">
+                    <div class="absolute -top-3 left-8 text-4xl text-terracotta/20 font-display">"</div>
+                    <div class="flex gap-1 mb-3">
+                        <% for(let i=0; i<5; i++) { %><svg class="w-4 h-4 text-or-doux" fill="currentColor"
+                                viewBox="0 0 20 20">
+                                <path
+                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <% } %>
+                    </div>
+                    <p class="text-brun/80 text-sm leading-relaxed italic font-accent">
+                        "Un véritable havre de paix. Le matcha latte est divin et les macarons sont les meilleurs que
+                        j'ai goûtés à Paris. L'ambiance est tellement chaleureuse qu'on ne veut plus repartir !"
+                    </p>
+                    <div class="mt-4 pt-4 border-t border-brun/10">
+                        <p class="font-medium text-sm text-noir-cafe">Marie L.</p>
+                        <p class="text-xs text-brun/50">Habituée depuis 2023</p>
+                    </div>
+                </div>
+
+                <!-- Témoignage 2 -->
+                <div class="bg-creme rounded-gourmand-lg p-8 shadow-card relative" data-aos="fade-up"
+                    data-aos-delay="150">
+                    <div class="absolute -top-3 left-8 text-4xl text-terracotta/20 font-display">"</div>
+                    <div class="flex gap-1 mb-3">
+                        <% for(let i=0; i<5; i++) { %><svg class="w-4 h-4 text-or-doux" fill="currentColor"
+                                viewBox="0 0 20 20">
+                                <path
+                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <% } %>
+                    </div>
+                    <p class="text-brun/80 text-sm leading-relaxed italic font-accent">
+                        "J'ai commandé le coffret découverte thés du monde pour offrir. L'emballage est magnifique, les
+                        thés exceptionnels. Ma mère était ravie ! La livraison était rapide et soignée."
+                    </p>
+                    <div class="mt-4 pt-4 border-t border-brun/10">
+                        <p class="font-medium text-sm text-noir-cafe">Thomas D.</p>
+                        <p class="text-xs text-brun/50">Client en ligne</p>
+                    </div>
+                </div>
+
+                <!-- Témoignage 3 -->
+                <div class="bg-creme rounded-gourmand-lg p-8 shadow-card relative" data-aos="fade-up"
+                    data-aos-delay="300">
+                    <div class="absolute -top-3 left-8 text-4xl text-terracotta/20 font-display">"</div>
+                    <div class="flex gap-1 mb-3">
+                        <% for(let i=0; i<5; i++) { %><svg class="w-4 h-4 text-or-doux" fill="currentColor"
+                                viewBox="0 0 20 20">
+                                <path
+                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <% } %>
+                    </div>
+                    <p class="text-brun/80 text-sm leading-relaxed italic font-accent">
+                        "La formule Tea Time Royal est une expérience complète. Le Earl Grey est sublime, les macarons
+                        fondent en bouche. Un endroit parfait pour une pause entre amis."
+                    </p>
+                    <div class="mt-4 pt-4 border-t border-brun/10">
+                        <p class="font-medium text-sm text-noir-cafe">Sophie & Julie</p>
+                        <p class="text-xs text-brun/50">Fans du Tea Time</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════ CTA FINAL ═══════ -->
+    <section class="py-20 bg-terracotta relative overflow-hidden">
+        <div class="absolute inset-0 opacity-5 bg-repeat"
+            style="background-image: url('data:image/svg+xml,%3Csvg width=%2220%22 height=%2220%22 viewBox=%220 0 20 20%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cpath d=%22M10 3c2 0 4 3 4 7s-2 7-4 7-4-3-4-7 2-7 4-7z%22 fill=%22%23fff%22/%3E%3C/svg%3E');">
+        </div>
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+            <h2 class="font-display text-3xl sm:text-4xl text-creme" data-aos="fade-up">Offrez une pause gourmande</h2>
+            <p class="font-accent italic text-lg text-creme/80 mt-4" data-aos="fade-up" data-aos-delay="100">
+                Nos coffrets cadeaux sont le présent idéal pour les amateurs de thé et de douceurs.
+            </p>
+            <a href="/boutique?categorie=coffrets"
+                class="inline-flex items-center gap-2 mt-8 px-8 py-4 bg-blanc-casse text-terracotta font-medium rounded-gourmand hover:bg-creme transition-all shadow-warm hover:shadow-warm-lg hover:-translate-y-0.5"
+                data-aos="fade-up" data-aos-delay="200">
+                Découvrir nos coffrets
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+                </svg>
+            </a>
+        </div>
+    </section>

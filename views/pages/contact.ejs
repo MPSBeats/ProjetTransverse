@@ -1,0 +1,159 @@
+<% layout('layouts/main') -%>
+
+    <!-- Breadcrumb -->
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4" aria-label="Fil d'Ariane">
+        <ol class="flex items-center gap-2 text-sm text-brun/50">
+            <li><a href="/" class="hover:text-terracotta transition-colors">Accueil</a></li>
+            <li><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg></li>
+            <li class="text-brun font-medium">Contact</li>
+        </ol>
+    </nav>
+
+    <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+        <div class="text-center py-8">
+            <h1 class="font-display text-4xl text-noir-cafe" data-aos="fade-up">Nous contacter</h1>
+            <p class="font-accent italic text-brun/60 mt-2" data-aos="fade-up" data-aos-delay="100">Nous sommes à votre
+                écoute</p>
+        </div>
+
+        <% if (success) { %>
+            <div class="bg-vert-the/10 border border-vert-the/30 text-brun rounded-gourmand-lg p-6 mb-8 text-center"
+                data-aos="fade-up">
+                <svg class="w-10 h-10 text-vert-the mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <p class="font-medium">Merci pour votre message !</p>
+                <p class="text-sm text-brun/60 mt-1">Nous vous répondrons dans les plus brefs délais.</p>
+            </div>
+            <% } %>
+
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-12">
+                    <!-- Formulaire -->
+                    <div class="lg:col-span-3" data-aos="fade-right">
+                        <form method="POST" action="/contact"
+                            class="bg-blanc-casse rounded-gourmand-lg p-8 shadow-card space-y-6">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="name" class="block text-sm font-medium text-brun mb-1">Votre nom
+                                        *</label>
+                                    <input type="text" id="name" name="name" required
+                                        class="w-full px-4 py-3 rounded-gourmand border border-creme focus:border-terracotta focus:ring-2 focus:ring-terracotta/20 outline-none transition-all bg-creme/30"
+                                        placeholder="Marie Dupont">
+                                </div>
+                                <div>
+                                    <label for="email" class="block text-sm font-medium text-brun mb-1">Email *</label>
+                                    <input type="email" id="email" name="email" required
+                                        class="w-full px-4 py-3 rounded-gourmand border border-creme focus:border-terracotta focus:ring-2 focus:ring-terracotta/20 outline-none transition-all bg-creme/30"
+                                        placeholder="marie@exemple.fr">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="subject" class="block text-sm font-medium text-brun mb-1">Sujet *</label>
+                                <select id="subject" name="subject" required
+                                    class="w-full px-4 py-3 rounded-gourmand border border-creme focus:border-terracotta outline-none transition-all bg-creme/30 appearance-none cursor-pointer">
+                                    <option value="">Choisissez un sujet</option>
+                                    <option value="Commande">Question sur une commande</option>
+                                    <option value="Produit">Question sur un produit</option>
+                                    <option value="Réservation">Réservation au salon</option>
+                                    <option value="Événement">Événement privé / Traiteur</option>
+                                    <option value="Autre">Autre</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="message" class="block text-sm font-medium text-brun mb-1">Votre message
+                                    *</label>
+                                <textarea id="message" name="message" required rows="5"
+                                    class="w-full px-4 py-3 rounded-gourmand border border-creme focus:border-terracotta focus:ring-2 focus:ring-terracotta/20 outline-none transition-all bg-creme/30 resize-none"
+                                    placeholder="Écrivez-nous..."></textarea>
+                            </div>
+
+                            <button type="submit"
+                                class="w-full py-4 bg-terracotta text-blanc-casse font-medium rounded-gourmand hover:bg-terracotta-dark transition-all shadow-warm text-lg">
+                                Envoyer le message
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Infos de contact -->
+                    <div class="lg:col-span-2 space-y-6" data-aos="fade-left">
+                        <div class="bg-blanc-casse rounded-gourmand-lg p-6 shadow-card">
+                            <h2 class="font-display text-xl text-noir-cafe mb-4">Informations</h2>
+                            <ul class="space-y-4">
+                                <li class="flex items-start gap-3">
+                                    <div
+                                        class="w-10 h-10 bg-terracotta/10 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-5 h-5 text-terracotta" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-sm text-brun">Adresse</p>
+                                        <p class="text-sm text-brun/60">64, rue d'Alésia<br>75014 Paris</p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <div
+                                        class="w-10 h-10 bg-terracotta/10 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-5 h-5 text-terracotta" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                                d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-sm text-brun">Téléphone</p>
+                                        <p class="text-sm text-brun/60"><a href="tel:+33123456789"
+                                                class="hover:text-terracotta transition-colors">01 23 45 67 89</a></p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <div
+                                        class="w-10 h-10 bg-terracotta/10 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-5 h-5 text-terracotta" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-sm text-brun">Email</p>
+                                        <p class="text-sm text-brun/60"><a href="mailto:contact@invithegourmand.fr"
+                                                class="hover:text-terracotta transition-colors">contact@invithegourmand.fr</a>
+                                        </p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Horaires -->
+                        <div class="bg-blanc-casse rounded-gourmand-lg p-6 shadow-card">
+                            <h2 class="font-display text-xl text-noir-cafe mb-4">Horaires d'ouverture</h2>
+                            <ul class="space-y-2 text-sm">
+                                <li class="flex justify-between"><span>Lundi</span><span
+                                        class="text-rose-macaron-dark">Fermé</span></li>
+                                <li class="flex justify-between"><span>Mardi — Vendredi</span><span>10h — 19h</span>
+                                </li>
+                                <li class="flex justify-between"><span>Samedi</span><span>10h — 19h</span></li>
+                                <li class="flex justify-between"><span>Dimanche</span><span>10h — 17h</span></li>
+                            </ul>
+                        </div>
+
+                        <!-- Google Maps -->
+                        <div class="bg-blanc-casse rounded-gourmand-lg overflow-hidden shadow-card aspect-[4/3]">
+                            <iframe
+                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2626.5720198939434!2d2.3234325769573685!3d48.828226802828105!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47e67198f232dee5%3A0xcb7adff1b56965dc!2sInvithe%20Gourmand%20Paris!5e0!3m2!1sfr!2sus!4v1770849020925!5m2!1sfr!2sus"
+                                width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"
+                                referrerpolicy="no-referrer-when-downgrade"
+                                title="Localisation de L'InviThé Gourmand sur Google Maps"></iframe>
+                        </div>
+                    </div>
+                </div>
+    </section>

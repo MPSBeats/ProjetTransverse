@@ -1,0 +1,100 @@
+<!-- views/partials/product-card.ejs — Carte produit réutilisable -->
+<!-- Requiert : product, formatPrice, getProductImage, calculateDiscount, getStockStatus, parseJsonArray -->
+
+<div class="group bg-blanc-casse rounded-gourmand-lg overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1"
+    data-aos="fade-up">
+    <!-- Image -->
+    <a href="/boutique/<%= product.slug %>" class="block relative overflow-hidden aspect-square">
+        <img src="<%= getProductImage(product.images, 'medium') %>" alt="<%= product.name %> — L'InviThé Gourmand"
+            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy"
+            width="400" height="400">
+        <!-- Badges -->
+        <div class="absolute top-3 left-3 flex flex-col gap-2">
+            <% if (product.isFeatured) { %>
+                <span class="px-3 py-1 bg-or-doux text-blanc-casse text-xs font-bold rounded-full shadow-sm">★
+                    Populaire</span>
+                <% } %>
+                    <% if (product.isNew) { %>
+                        <span
+                            class="px-3 py-1 bg-vert-the text-blanc-casse text-xs font-bold rounded-full shadow-sm">Nouveau</span>
+                        <% } %>
+                            <% if (product.promoPrice) { %>
+                                <span
+                                    class="px-3 py-1 bg-terracotta text-blanc-casse text-xs font-bold rounded-full shadow-sm">-
+                                    <%= calculateDiscount(product.price, product.promoPrice) %>%</span>
+                                <% } %>
+        </div>
+        <!-- Alerte stock -->
+        <% const stockStatus=getStockStatus(product.stock, product.stockAlertThreshold); %>
+            <% if (stockStatus==='low' ) { %>
+                <span
+                    class="absolute bottom-3 right-3 px-3 py-1 bg-or-doux/90 text-noir-cafe text-xs font-medium rounded-full backdrop-blur-sm">Plus
+                    que <%= product.stock %> !</span>
+                <% } else if (stockStatus==='out' ) { %>
+                    <span
+                        class="absolute bottom-3 right-3 px-3 py-1 bg-noir-cafe/80 text-creme text-xs font-medium rounded-full backdrop-blur-sm">Rupture
+                        de stock</span>
+                    <% } %>
+    </a>
+
+    <!-- Contenu -->
+    <div class="p-4">
+        <!-- Catégorie -->
+        <% if (product.category) { %>
+            <span class="text-xs text-vert-the font-medium uppercase tracking-wide">
+                <%= product.category.name %>
+            </span>
+            <% } %>
+
+                <!-- Nom -->
+                <h3 class="font-display text-lg text-noir-cafe mt-1 line-clamp-2">
+                    <a href="/boutique/<%= product.slug %>" class="hover:text-terracotta transition-colors">
+                        <%= product.name %>
+                    </a>
+                </h3>
+
+                <!-- Description courte -->
+                <% if (product.shortDescription) { %>
+                    <p class="text-sm text-brun/60 mt-1 line-clamp-2">
+                        <%= product.shortDescription %>
+                    </p>
+                    <% } %>
+
+                        <!-- Prix + Bouton -->
+                        <div class="flex items-center justify-between mt-4">
+                            <div>
+                                <% if (product.promoPrice) { %>
+                                    <span class="text-lg font-bold text-terracotta">
+                                        <%= formatPrice(product.promoPrice) %>
+                                    </span>
+                                    <span class="text-sm text-brun/40 line-through ml-1">
+                                        <%= formatPrice(product.price) %>
+                                    </span>
+                                    <% } else { %>
+                                        <span class="text-lg font-bold text-terracotta">
+                                            <%= formatPrice(product.price) %>
+                                        </span>
+                                        <% } %>
+                            </div>
+
+                            <% if (stockStatus !=='out' ) { %>
+                                <button x-data="{ added: false }"
+                                    @click="$store.cart.addItem('<%= product.id %>', 1); added = true; setTimeout(() => added = false, 1500)"
+                                    class="w-10 h-10 flex items-center justify-center rounded-full bg-terracotta text-blanc-casse hover:bg-terracotta-dark transition-all duration-200 shadow-warm hover:shadow-warm-lg active:scale-95"
+                                    :class="added ? 'bg-vert-the' : 'bg-terracotta'"
+                                    aria-label="Ajouter <%= product.name %> au panier">
+                                    <svg x-show="!added" class="w-5 h-5" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    <svg x-show="added" class="w-5 h-5 animate-pulse-check" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24" style="display: none;">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </button>
+                                <% } %>
+                        </div>
+    </div>
+</div>

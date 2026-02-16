@@ -1,0 +1,153 @@
+<% layout('layouts/main') -%>
+
+    <!-- Breadcrumb -->
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4" aria-label="Fil d'Ariane">
+        <ol class="flex items-center gap-2 text-sm text-brun/50">
+            <li><a href="/" class="hover:text-terracotta transition-colors">Accueil</a></li>
+            <li><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg></li>
+            <li class="text-brun font-medium">Panier</li>
+        </ol>
+    </nav>
+
+    <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+        <h1 class="font-display text-3xl text-noir-cafe mb-8" data-aos="fade-up">Votre Panier</h1>
+
+        <% if (cancelled) { %>
+            <div
+                class="bg-or-doux/10 border border-or-doux/30 text-brun rounded-gourmand p-4 mb-6 flex items-center gap-3">
+                <svg class="w-5 h-5 text-or-doux flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.072 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+                <p class="text-sm">Paiement annulé. Votre panier a été conservé.</p>
+            </div>
+            <% } %>
+
+                <div x-data>
+                    <template x-if="$store.cart.items.length === 0">
+                        <div class="text-center py-20">
+                            <svg class="w-24 h-24 mx-auto text-brun/15 mb-6" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+                                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                            </svg>
+                            <h2 class="font-display text-2xl text-brun/40">Votre panier est vide</h2>
+                            <p class="text-brun/40 mt-2">Ajoutez des produits pour commencer vos achats</p>
+                            <a href="/boutique"
+                                class="inline-block mt-8 px-8 py-3 bg-terracotta text-blanc-casse rounded-gourmand font-medium hover:bg-terracotta-dark transition-colors shadow-warm">Découvrir
+                                nos produits</a>
+                        </div>
+                    </template>
+
+                    <template x-if="$store.cart.items.length > 0">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <!-- Liste articles -->
+                            <div class="lg:col-span-2 space-y-4">
+                                <template x-for="item in $store.cart.items" :key="item.productId">
+                                    <div class="bg-blanc-casse rounded-gourmand-lg p-4 shadow-card flex gap-4"
+                                        data-aos="fade-up">
+                                        <a :href="'/boutique/' + item.slug" class="flex-shrink-0"><img :src="item.image"
+                                                :alt="item.name" class="w-24 h-24 object-cover rounded-gourmand"
+                                                loading="lazy"></a>
+                                        <div class="flex-1 min-w-0">
+                                            <a :href="'/boutique/' + item.slug"
+                                                class="font-body font-medium text-noir-cafe hover:text-terracotta transition-colors line-clamp-1"
+                                                x-text="item.name"></a>
+                                            <p class="text-terracotta font-medium mt-1 text-sm"
+                                                x-text="((item.promoPrice || item.price) * item.quantity).toFixed(2) + ' €'">
+                                            </p>
+                                            <div class="flex items-center gap-3 mt-3">
+                                                <div class="flex items-center border border-creme rounded-gourmand">
+                                                    <button
+                                                        @click="$store.cart.updateQuantity(item.productId, item.quantity - 1)"
+                                                        class="w-8 h-8 flex items-center justify-center text-sm hover:bg-creme transition-colors">−</button>
+                                                    <span class="w-10 text-center text-sm font-medium"
+                                                        x-text="item.quantity"></span>
+                                                    <button
+                                                        @click="$store.cart.updateQuantity(item.productId, item.quantity + 1)"
+                                                        class="w-8 h-8 flex items-center justify-center text-sm hover:bg-creme transition-colors">+</button>
+                                                </div>
+                                                <button @click="$store.cart.removeItem(item.productId)"
+                                                    class="text-sm text-rose-macaron-dark hover:text-red-600 transition-colors">Supprimer</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- Résumé -->
+                            <div class="lg:col-span-1">
+                                <div class="bg-blanc-casse rounded-gourmand-lg p-6 shadow-card sticky top-24"
+                                    data-aos="fade-left">
+                                    <h2 class="font-display text-xl text-noir-cafe mb-4">Récapitulatif</h2>
+                                    <div class="space-y-3">
+                                        <div class="flex justify-between text-sm"><span
+                                                class="text-brun/60">Sous-total</span><span
+                                                x-text="$store.cart.subtotal.toFixed(2) + ' €'"></span></div>
+                                        <template x-if="$store.cart.discount > 0">
+                                            <div class="flex justify-between text-sm text-vert-the">
+                                                <span>Réduction</span><span
+                                                    x-text="'-' + $store.cart.discount.toFixed(2) + ' €'"></span></div>
+                                        </template>
+                                        <div class="flex justify-between text-sm text-brun/60"><span>Frais de
+                                                port</span><span>Calculés au checkout</span></div>
+                                    </div>
+
+                                    <!-- Code promo -->
+                                    <div class="mt-4 pt-4 border-t border-creme"
+                                        x-data="{ promoCode: '', promoLoading: false, promoError: '' }">
+                                        <div class="flex gap-2">
+                                            <input type="text" x-model="promoCode" placeholder="Code promo"
+                                                class="flex-1 px-3 py-2 rounded-gourmand border border-creme text-sm focus:border-terracotta outline-none">
+                                            <button
+                                                @click="promoLoading = true; promoError = ''; $store.cart.applyPromo(promoCode).then(() => promoLoading = false).catch(e => { promoError = e; promoLoading = false; })"
+                                                :disabled="promoLoading || !promoCode"
+                                                class="px-4 py-2 bg-noir-cafe text-creme text-sm rounded-gourmand hover:bg-brun transition-colors disabled:opacity-50">
+                                                <span x-show="!promoLoading">OK</span>
+                                                <span x-show="promoLoading">...</span>
+                                            </button>
+                                        </div>
+                                        <p x-show="promoError" x-text="promoError"
+                                            class="text-xs text-rose-macaron-dark mt-2" style="display: none;"></p>
+                                    </div>
+
+                                    <div
+                                        class="flex justify-between font-display text-xl text-noir-cafe mt-4 pt-4 border-t border-creme">
+                                        <span>Total</span>
+                                        <span class="text-terracotta"
+                                            x-text="$store.cart.total.toFixed(2) + ' €'"></span>
+                                    </div>
+
+                                    <a href="/checkout"
+                                        class="block w-full mt-6 py-4 bg-terracotta text-blanc-casse text-center rounded-gourmand font-medium hover:bg-terracotta-dark transition-colors shadow-warm text-lg">
+                                        Passer commande
+                                    </a>
+
+                                    <a href="/boutique"
+                                        class="block w-full mt-3 py-3 border border-creme text-brun text-center rounded-gourmand text-sm hover:border-terracotta hover:text-terracotta transition-colors">
+                                        ← Continuer mes achats
+                                    </a>
+
+                                    <!-- Engagements -->
+                                    <div class="mt-6 pt-4 border-t border-creme space-y-2">
+                                        <div class="flex items-center gap-2 text-xs text-brun/50"><svg
+                                                class="w-4 h-4 text-vert-the" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                            </svg>Paiement 100% sécurisé par Stripe</div>
+                                        <div class="flex items-center gap-2 text-xs text-brun/50"><svg
+                                                class="w-4 h-4 text-vert-the" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                            </svg>Livraison soignée</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+    </section>

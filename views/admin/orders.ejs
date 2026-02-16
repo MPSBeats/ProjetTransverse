@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= typeof metaTitle !=='undefined' ? metaTitle : "Commandes — Admin" %>
+    </title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://unpkg.com/alpinejs@3.14.3/dist/cdn.min.js" defer></script>
+</head>
+
+<body class="bg-creme font-body antialiased">
+    <div class="flex min-h-screen">
+        <%- include('../partials/admin-sidebar', { metaTitle, adminName }) %>
+
+            <div class="flex-1 overflow-auto">
+                <div class="p-6 lg:p-8">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+                        <h1 class="font-display text-2xl text-noir-cafe">Gestion des Commandes</h1>
+                        <div class="flex items-center gap-2">
+                            <form method="GET" action="/admin/commandes/export"
+                                class="flex items-center gap-2 flex-wrap">
+                                <input type="date" name="from"
+                                    class="px-3 py-1.5 rounded-gourmand border border-creme text-xs"
+                                    placeholder="Depuis">
+                                <input type="date" name="to"
+                                    class="px-3 py-1.5 rounded-gourmand border border-creme text-xs"
+                                    placeholder="Jusqu'à">
+                                <% if (typeof currentStatus !=='undefined' && currentStatus) { %>
+                                    <input type="hidden" name="status" value="<%= currentStatus %>">
+                                    <% } %>
+                                        <button type="submit"
+                                            class="px-5 py-2 bg-noir-cafe text-blanc-casse rounded-gourmand font-medium text-sm hover:bg-noir-cafe/80 transition-all shadow-md flex items-center gap-2">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                            📊 Export CSV
+                                        </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Filtres statut -->
+                    <div class="flex gap-2 mb-6 overflow-x-auto">
+                        <a href="/admin/commandes"
+                            class="px-4 py-2 rounded-gourmand text-sm transition-colors <%= !currentStatus ? 'bg-terracotta text-blanc-casse' : 'bg-blanc-casse text-brun hover:bg-creme shadow-card' %>">Toutes</a>
+                        <a href="/admin/commandes?statut=pending"
+                            class="px-4 py-2 rounded-gourmand text-sm transition-colors <%= currentStatus === 'pending' ? 'bg-terracotta text-blanc-casse' : 'bg-blanc-casse text-brun hover:bg-creme shadow-card' %>">En
+                            attente</a>
+                        <a href="/admin/commandes?statut=paid"
+                            class="px-4 py-2 rounded-gourmand text-sm transition-colors <%= currentStatus === 'paid' ? 'bg-terracotta text-blanc-casse' : 'bg-blanc-casse text-brun hover:bg-creme shadow-card' %>">Payées</a>
+                        <a href="/admin/commandes?statut=preparing"
+                            class="px-4 py-2 rounded-gourmand text-sm transition-colors <%= currentStatus === 'preparing' ? 'bg-terracotta text-blanc-casse' : 'bg-blanc-casse text-brun hover:bg-creme shadow-card' %>">En
+                            préparation</a>
+                        <a href="/admin/commandes?statut=shipped"
+                            class="px-4 py-2 rounded-gourmand text-sm transition-colors <%= currentStatus === 'shipped' ? 'bg-terracotta text-blanc-casse' : 'bg-blanc-casse text-brun hover:bg-creme shadow-card' %>">Expédiées</a>
+                        <a href="/admin/commandes?statut=delivered"
+                            class="px-4 py-2 rounded-gourmand text-sm transition-colors <%= currentStatus === 'delivered' ? 'bg-terracotta text-blanc-casse' : 'bg-blanc-casse text-brun hover:bg-creme shadow-card' %>">Livrées</a>
+                    </div>
+
+                    <!-- Tableau -->
+                    <div class="bg-blanc-casse rounded-gourmand-lg shadow-card">
+                        <% if (orders.length===0) { %>
+                            <div class="text-center py-12">
+                                <p class="text-brun/40">Aucune commande</p>
+                            </div>
+                            <% } else { %>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm">
+                                        <thead>
+                                            <tr class="bg-creme text-left text-brun/60">
+                                                <th class="px-4 py-3">N° Commande</th>
+                                                <th class="px-4 py-3">Client</th>
+                                                <th class="px-4 py-3">Articles</th>
+                                                <th class="px-4 py-3">Total</th>
+                                                <th class="px-4 py-3">Livraison</th>
+                                                <th class="px-4 py-3">Statut</th>
+                                                <th class="px-4 py-3">Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% orders.forEach(function(order) { %>
+                                                <tr
+                                                    class="border-b border-creme/50 hover:bg-creme/30 transition-colors">
+                                                    <td class="px-4 py-3 font-medium text-terracotta">
+                                                        <%= order.orderNumber %>
+                                                    </td>
+                                                    <td class="px-4 py-3">
+                                                        <p class="font-medium">
+                                                            <%= order.customerName %>
+                                                        </p>
+                                                        <p class="text-xs text-brun/40">
+                                                            <%= order.customerEmail %>
+                                                        </p>
+                                                    </td>
+                                                    <td class="px-4 py-3 text-brun/60">
+                                                        <%= order.items.length %> article(s)
+                                                    </td>
+                                                    <td class="px-4 py-3 font-medium">
+                                                        <%= formatPrice(order.total) %>
+                                                    </td>
+                                                    <td class="px-4 py-3 text-xs text-brun/50">
+                                                        <%= order.deliveryMethod==='pickup' ? '📍 Retrait'
+                                                            : '🚚 Livraison' %>
+                                                    </td>
+                                                    <td class="px-4 py-3">
+                                                        <select
+                                                            onchange="fetch('/api/admin/orders/<%= order.id %>/status', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: this.value }) }).then(() => location.reload())"
+                                                            class="px-2 py-1 rounded-full text-xs font-medium cursor-pointer border-0 outline-none"
+                                                            style="background: <%= getOrderStatusColor(order.status) %>20; color: <%= getOrderStatusColor(order.status) %>;">
+                                                            <% ['pending','paid','preparing','ready','shipped','delivered','cancelled'].forEach(function(s)
+                                                                { %>
+                                                                <option value="<%= s %>" <%=order.status===s
+                                                                    ? 'selected' : '' %>><%= getOrderStatusLabel(s) %>
+                                                                </option>
+                                                                <% }); %>
+                                                        </select>
+                                                    </td>
+                                                    <td class="px-4 py-3 text-brun/50 text-xs">
+                                                        <%= new Date(order.createdAt).toLocaleDateString('fr-FR', {
+                                                            day: '2-digit' , month: '2-digit' , year: 'numeric' ,
+                                                            hour: '2-digit' , minute: '2-digit' }) %>
+                                                    </td>
+                                                </tr>
+                                                <% }); %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <% } %>
+                    </div>
+                </div>
+            </div>
+    </div>
+</body>
+
+</html>

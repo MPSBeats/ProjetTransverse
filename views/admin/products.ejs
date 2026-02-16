@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= typeof metaTitle !=='undefined' ? metaTitle : "Produits — Admin" %>
+    </title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://unpkg.com/alpinejs@3.14.3/dist/cdn.min.js" defer></script>
+</head>
+
+<body class="bg-creme font-body antialiased">
+    <div class="flex min-h-screen">
+        <%- include('../partials/admin-sidebar', { metaTitle, adminName }) %>
+
+            <div class="flex-1 overflow-auto">
+                <div class="p-6 lg:p-8">
+                    <div class="flex items-center justify-between mb-8">
+                        <h1 class="font-display text-2xl text-noir-cafe">Gestion des Produits</h1>
+                        <button onclick="document.getElementById('create-modal').showModal()"
+                            class="px-4 py-2 bg-terracotta text-blanc-casse rounded-gourmand font-medium hover:bg-terracotta-dark transition-colors text-sm flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4" />
+                            </svg>
+                            Nouveau produit
+                        </button>
+                    </div>
+
+                    <!-- Messages de succès/erreur -->
+                    <% if (typeof currentSearch !=='undefined' ) { %>
+                        <% const urlParams=typeof require !=='undefined' ? {} : {}; %>
+                            <% } %>
+
+                                <!-- Filtres -->
+                                <form method="GET" action="/admin/produits"
+                                    class="flex flex-col sm:flex-row gap-3 mb-6">
+                                    <input type="text" name="recherche" value="<%= currentSearch %>"
+                                        placeholder="Rechercher..."
+                                        class="flex-1 px-4 py-2 rounded-gourmand border border-creme focus:border-terracotta outline-none text-sm">
+                                    <select name="categorie"
+                                        class="px-4 py-2 rounded-gourmand border border-creme focus:border-terracotta outline-none text-sm">
+                                        <option value="">Toutes catégories</option>
+                                        <% categories.forEach(function(cat) { %>
+                                            <option value="<%= cat.id %>" <%=currentCategory===cat.id ? 'selected' : ''
+                                                %>><%= cat.name %>
+                                            </option>
+                                            <% }); %>
+                                    </select>
+                                    <button type="submit"
+                                        class="px-4 py-2 bg-noir-cafe text-creme rounded-gourmand text-sm hover:bg-brun transition-colors">Filtrer</button>
+                                </form>
+
+                                <!-- Tableau produits -->
+                                <div class="bg-blanc-casse rounded-gourmand-lg shadow-card overflow-hidden">
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-sm">
+                                            <thead>
+                                                <tr class="bg-creme text-left text-brun/60">
+                                                    <th class="px-4 py-3">Image</th>
+                                                    <th class="px-4 py-3">Produit</th>
+                                                    <th class="px-4 py-3">Catégorie</th>
+                                                    <th class="px-4 py-3">Prix</th>
+                                                    <th class="px-4 py-3">Stock</th>
+                                                    <th class="px-4 py-3">Statut</th>
+                                                    <th class="px-4 py-3">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% products.forEach(function(product, idx) { %>
+                                                    <tr
+                                                        class="border-b border-creme/50 hover:bg-creme/30 transition-colors">
+                                                        <td class="px-4 py-3"><img
+                                                                src="<%= getProductImage(product.images, 'thumbnail') %>"
+                                                                alt="" class="w-12 h-12 rounded-gourmand object-cover">
+                                                        </td>
+                                                        <td class="px-4 py-3">
+                                                            <p class="font-medium text-brun">
+                                                                <%= product.name %>
+                                                            </p>
+                                                            <p class="text-xs text-brun/40">
+                                                                <%= product.slug %>
+                                                            </p>
+                                                        </td>
+                                                        <td class="px-4 py-3 text-brun/60">
+                                                            <%= product.category.name %>
+                                                        </td>
+                                                        <td class="px-4 py-3">
+                                                            <% if (product.promoPrice) { %>
+                                                                <span class="text-terracotta font-medium">
+                                                                    <%= formatPrice(product.promoPrice) %>
+                                                                </span>
+                                                                <span class="text-brun/30 line-through text-xs ml-1">
+                                                                    <%= formatPrice(product.price) %>
+                                                                </span>
+                                                                <% } else { %>
+                                                                    <span class="font-medium">
+                                                                        <%= formatPrice(product.price) %>
+                                                                    </span>
+                                                                    <% } %>
+                                                        </td>
+                                                        <td class="px-4 py-3">
+                                                            <% const status=getStockStatus(product.stock,
+                                                                product.stockAlertThreshold); %>
+                                                                <span
+                                                                    class="px-2 py-1 rounded-full text-xs font-medium <%= status === 'in' ? 'bg-green-100 text-green-700' : status === 'low' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700' %>">
+                                                                    <%= product.stock %>
+                                                                </span>
+                                                        </td>
+                                                        <td class="px-4 py-3">
+                                                            <span
+                                                                class="w-2 h-2 inline-block rounded-full <%= product.isActive ? 'bg-green-500' : 'bg-gray-300' %>"></span>
+                                                            <span class="text-xs text-brun/50 ml-1">
+                                                                <%= product.isActive ? 'Actif' : 'Inactif' %>
+                                                            </span>
+                                                        </td>
+                                                        <td class="px-4 py-3">
+                                                            <div class="flex gap-2">
+                                                                <a href="/boutique/<%= product.slug %>" target="_blank"
+                                                                    class="p-1 text-brun/40 hover:text-terracotta transition-colors"
+                                                                    title="Voir">
+                                                                    <svg class="w-4 h-4" fill="none"
+                                                                        stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round"
+                                                                            stroke-linejoin="round" stroke-width="2"
+                                                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                        <path stroke-linecap="round"
+                                                                            stroke-linejoin="round" stroke-width="2"
+                                                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                                    </svg>
+                                                                </a>
+                                                                <button
+                                                                    onclick="document.getElementById('edit-modal-<%= product.id %>').showModal()"
+                                                                    class="p-1 text-brun/40 hover:text-vert-the transition-colors"
+                                                                    title="Modifier">
+                                                                    <svg class="w-4 h-4" fill="none"
+                                                                        stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round"
+                                                                            stroke-linejoin="round" stroke-width="2"
+                                                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                                    </svg>
+                                                                </button>
+                                                                <form method="POST"
+                                                                    action="/admin/produits/<%= product.id %>/delete"
+                                                                    onsubmit="return confirm('Supprimer ce produit ?')">
+                                                                    <button type="submit"
+                                                                        class="p-1 text-brun/40 hover:text-red-500 transition-colors"
+                                                                        title="Supprimer">
+                                                                        <svg class="w-4 h-4" fill="none"
+                                                                            stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path stroke-linecap="round"
+                                                                                stroke-linejoin="round" stroke-width="2"
+                                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                        </svg>
+                                                                    </button>
+                                                                </form>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <% }); %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                </div>
+            </div>
+    </div>
+
+    <!--  Modal création -->
+    <dialog id="create-modal"
+        class="bg-blanc-casse rounded-gourmand-lg shadow-warm-lg w-full max-w-2xl p-0 backdrop:bg-noir-cafe/40 backdrop:backdrop-blur-sm">
+        <form method="POST" action="/admin/produits" enctype="multipart/form-data" class="p-8">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="font-display text-xl text-noir-cafe">Nouveau Produit</h2>
+                <button type="button" onclick="document.getElementById('create-modal').close()"
+                    class="p-1 hover:bg-creme rounded-full"><svg class="w-5 h-5" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg></button>
+            </div>
+            <div class="grid grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto">
+                <div class="col-span-2"><label class="block text-xs font-medium text-brun mb-1">Nom *</label><input
+                        type="text" name="name" required
+                        class="w-full px-3 py-2 rounded-gourmand border border-creme text-sm focus:border-terracotta outline-none">
+                </div>
+                <div><label class="block text-xs font-medium text-brun mb-1">Prix (EUR) *</label><input type="number"
+                        name="price" step="0.01" required
+                        class="w-full px-3 py-2 rounded-gourmand border border-creme text-sm focus:border-terracotta outline-none">
+                </div>
+                <div><label class="block text-xs font-medium text-brun mb-1">Prix promo (EUR)</label><input
+                        type="number" name="promoPrice" step="0.01"
+                        class="w-full px-3 py-2 rounded-gourmand border border-creme text-sm focus:border-terracotta outline-none">
+                </div>
+                <div><label class="block text-xs font-medium text-brun mb-1">Categorie *</label><select
+                        name="categoryId" required
+                        class="w-full px-3 py-2 rounded-gourmand border border-creme text-sm focus:border-terracotta outline-none">
+                        <% categories.forEach(function(c) { %>
+                            <option value="<%= c.id %>">
+                                <%= c.name %>
+                            </option>
+                            <% }); %>
+                    </select></div>
+                <div><label class="block text-xs font-medium text-brun mb-1">Stock</label><input type="number"
+                        name="stock" value="0"
+                        class="w-full px-3 py-2 rounded-gourmand border border-creme text-sm focus:border-terracotta outline-none">
+                </div>
+                <div class="col-span-2"><label class="block text-xs font-medium text-brun mb-1">Description
+                        courte</label><textarea name="shortDescription" rows="2"
+                        class="w-full px-3 py-2 rounded-gourmand border border-creme text-sm focus:border-terracotta outline-none resize-none"></textarea>
+                </div>
+                <div class="col-span-2"><label class="block text-xs font-medium text-brun mb-1">Description
+                        longue</label><textarea name="longDescription" rows="3"
+                        class="w-full px-3 py-2 rounded-gourmand border border-creme text-sm focus:border-terracotta outline-none resize-none"></textarea>
+                </div>
+                <div><label class="block text-xs font-medium text-brun mb-1">Poids</label><input type="text"
+                        name="weight"
+                        class="w-full px-3 py-2 rounded-gourmand border border-creme text-sm focus:border-terracotta outline-none"
+                        placeholder="ex: 100g"></div>
+                <div><label class="block text-xs font-medium text-brun mb-1">Ingredients</label><input type="text"
+                        name="ingredients"
+                        class="w-full px-3 py-2 rounded-gourmand border border-creme text-sm focus:border-terracotta outline-none">
+                </div>
+                <div><label class="block text-xs font-medium text-brun mb-1">Allergenes</label><input type="text"
+                        name="allergens"
+                        class="w-full px-3 py-2 rounded-gourmand border border-creme text-sm focus:border-terracotta outline-none">
+                </div>
+                <div><label class="block text-xs font-medium text-brun mb-1">Tags (virgules)</label><input type="text"
+                        name="tags"
+                        class="w-full px-3 py-2 rounded-gourmand border border-creme text-sm focus:border-terracotta outline-none">
+                </div>
+                <div class="col-span-2"><label class="block text-xs font-medium text-brun mb-1">Images</label><input
+                        type="file" name="images" multiple accept="image/*" class="w-full text-sm"></div>
+                <div class="flex gap-4">
+                    <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="isActive" checked
+                            class="rounded"> Actif</label>
+                    <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="isFeatured"
+                            class="rounded"> Vedette</label>
+                    <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="isNew" class="rounded">
+                        Nouveau</label>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-creme">
+                <button type="button" onclick="document.getElementById('create-modal').close()"
+                    class="px-4 py-2 text-sm text-brun hover:text-terracotta transition-colors">Annuler</button>
+                <button type="submit"
+                    class="px-6 py-2 bg-terracotta text-blanc-casse rounded-gourmand font-medium text-sm hover:bg-terracotta-dark transition-colors">Creer</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- Modals d'édition (un par produit) -->
+    <% products.forEach(function(product) { %>
+        <dialog id="edit-modal-<%= product.id %>"
+            class="bg-blanc-casse rounded-gourmand-lg shadow-warm-lg w-full max-w-2xl p-0 backdrop:bg-noir-cafe/40 backdrop:backdrop-blur-sm">
+            <form method="POST" action="/admin/produits/<%= product.id %>" enctype="multipart/form-data" class="p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="font-display text-xl text-noir-cafe">Modifier : <%= product.name %>
+                    </h2>
+                    <button type="button" onclick="document.getElementById('edit-modal-<%= product.id %>').close()"
+                        class="p-1 hover:bg-creme rounded-full"><svg class="w-5 h-5" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg></button>
+                </div>
+                <div class="grid grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto">
+                    <div class="col-span-2"><label class="block text-xs font-medium text-brun mb-1">Nom *</label><input
+                            type="text" name="name" value="<%= product.name %>" required
+                            class="w-full px-3 py-2 rounded-gourmand border border-creme text-sm focus:border-terracotta outline-none">
+                    </div>
+                    <div><label class="block text-xs font-medium text-brun mb-1">Prix (EUR) *</label><input
+                            type="number" name="price" step="0.01" value="<%= product.price %>" required
+                            class="w-full px-3 py-2 rounded-gourmand border border-creme text-sm focus:border-terracotta outline-none">
+                    </div>
+                    <div><label class="block text-xs font-medium text-brun mb-1">Prix promo (EUR)</label><input
+                            type="number" name="promoPrice" step="0.01" value="<%= product.promoPrice || '' %>"
+                            class="w-full px-3 py-2 rounded-gourmand border border-creme text-sm focus:border-terracotta outline-none">
+                    </div>
+                    <div><label class="block text-xs font-medium text-brun mb-1">Categorie *</label><select
+                            name="categoryId" required
+                            class="w-full px-3 py-2 rounded-gourmand border border-creme text-sm focus:border-terracotta outline-none">
+                            <% categories.forEach(function(c) { %>
+                                <option value="<%= c.id %>" <%=product.categoryId===c.id ? 'selected' : '' %>><%= c.name
+                                        %>
+                                </option>
+                                <% }); %>
+                        </select></div>
+                    <div><label class="block text-xs font-medium text-brun mb-1">Stock</label><input type="number"
+                            name="stock" value="<%= product.stock %>"
+                            class="w-full px-3 py-2 rounded-gourmand border border-creme text-sm focus:border-terracotta outline-none">
+                    </div>
+                    <div><label class="block text-xs font-medium text-brun mb-1">Seuil alerte stock</label><input
+                            type="number" name="stockAlertThreshold" value="<%= product.stockAlertThreshold %>"
+                            class="w-full px-3 py-2 rounded-gourmand border border-creme text-sm focus:border-terracotta outline-none">
+                    </div>
+                    <div><label class="block text-xs font-medium text-brun mb-1">Poids</label><input type="text"
+                            name="weight" value="<%= product.weight || '' %>"
+                            class="w-full px-3 py-2 rounded-gourmand border border-creme text-sm focus:border-terracotta outline-none">
+                    </div>
+                    <div class="col-span-2"><label class="block text-xs font-medium text-brun mb-1">Description
+                            courte</label><textarea name="shortDescription" rows="2"
+                            class="w-full px-3 py-2 rounded-gourmand border border-creme text-sm focus:border-terracotta outline-none resize-none"><%= product.shortDescription || '' %></textarea>
+                    </div>
+                    <div class="col-span-2"><label class="block text-xs font-medium text-brun mb-1">Description
+                            longue</label><textarea name="longDescription" rows="3"
+                            class="w-full px-3 py-2 rounded-gourmand border border-creme text-sm focus:border-terracotta outline-none resize-none"><%= product.longDescription || '' %></textarea>
+                    </div>
+                    <div><label class="block text-xs font-medium text-brun mb-1">Ingredients</label><input type="text"
+                            name="ingredients" value="<%= product.ingredients || '' %>"
+                            class="w-full px-3 py-2 rounded-gourmand border border-creme text-sm focus:border-terracotta outline-none">
+                    </div>
+                    <div><label class="block text-xs font-medium text-brun mb-1">Allergenes</label><input type="text"
+                            name="allergens" value="<%= product.allergens || '' %>"
+                            class="w-full px-3 py-2 rounded-gourmand border border-creme text-sm focus:border-terracotta outline-none">
+                    </div>
+                    <div class="col-span-2"><label class="block text-xs font-medium text-brun mb-1">Tags
+                            (virgules)</label><input type="text" name="tags"
+                            value="<%= parseJsonArray(product.tags).join(', ') %>"
+                            class="w-full px-3 py-2 rounded-gourmand border border-creme text-sm focus:border-terracotta outline-none">
+                    </div>
+
+                    <!-- Images actuelles -->
+                    <% const currentImages=parseJsonArray(product.images); %>
+                        <% if (currentImages.length> 0) { %>
+                            <div class="col-span-2">
+                                <label class="block text-xs font-medium text-brun mb-2">Images actuelles <span
+                                        class="text-brun/40 font-normal">(glissez pour réordonner)</span></label>
+                                <div class="flex gap-2 flex-wrap image-sortable" id="images-container-<%= product.id %>"
+                                    data-product-id="<%= product.id %>">
+                                    <% currentImages.forEach(function(img, idx) { %>
+                                        <div class="relative group cursor-grab active:cursor-grabbing" draggable="true"
+                                            data-img="<%= img %>">
+                                            <img src="<%= img %>" alt=""
+                                                class="w-16 h-16 rounded-gourmand object-cover border-2 border-creme hover:border-terracotta transition-colors pointer-events-none">
+                                            <span
+                                                class="absolute bottom-0 left-0 bg-noir-cafe/70 text-blanc-casse text-[10px] px-1 rounded-tr-gourmand">
+                                                <%= idx + 1 %>
+                                            </span>
+                                            <button type="button"
+                                                class="absolute top-0 right-0 m-0.5 bg-red-500 text-white rounded-full p-0.5 z-10 shadow-sm transition-transform hover:scale-110"
+                                                onclick="markImageForDeletion('<%= product.id %>', '<%= img %>', this)">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        <% }); %>
+                                </div>
+                                <input type="hidden" name="deletedImages" id="deleted-images-<%= product.id %>"
+                                    value="">
+                                <input type="hidden" name="imageOrder" id="image-order-<%= product.id %>"
+                                    value="<%= currentImages.join(',') %>">
+                            </div>
+                            <% } %>
+                                <div class="col-span-2"><label class="block text-xs font-medium text-brun mb-1">Ajouter
+                                        des images</label><input type="file" name="images" multiple accept="image/*"
+                                        class="w-full text-sm"></div>
+                                <div class="flex gap-4">
+                                    <label class="flex items-center gap-2 text-sm"><input type="checkbox"
+                                            name="isActive" <%=product.isActive ? 'checked' : '' %> class="rounded">
+                                        Actif</label>
+                                    <label class="flex items-center gap-2 text-sm"><input type="checkbox"
+                                            name="isFeatured" <%=product.isFeatured ? 'checked' : '' %> class="rounded">
+                                        Vedette</label>
+                                    <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="isNew"
+                                            <%=product.isNew ? 'checked' : '' %> class="rounded">
+                                        Nouveau</label>
+                                </div>
+                </div>
+                <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-creme">
+                    <button type="button" onclick="document.getElementById('edit-modal-<%= product.id %>').close()"
+                        class="px-4 py-2 text-sm text-brun hover:text-terracotta transition-colors">Annuler</button>
+                    <button type="submit"
+                        class="px-6 py-2 bg-vert-the text-blanc-casse rounded-gourmand font-medium text-sm hover:opacity-90 transition-colors">Enregistrer</button>
+                </div>
+            </form>
+        </dialog>
+        <% }); %>
+            <script>
+                function markImageForDeletion(productId, imageUrl, buttonElement) {
+                    if (!confirm('Supprimer cette image ? (Sera effectif après enregistrement)')) return;
+
+                    const hiddenInput = document.getElementById('deleted-images-' + productId);
+                    const currentDeleted = hiddenInput.value ? hiddenInput.value.split(',') : [];
+
+                    currentDeleted.push(imageUrl);
+                    hiddenInput.value = currentDeleted.join(',');
+
+                    // Masquer visuellement l'image
+                    buttonElement.closest('[draggable]').style.display = 'none';
+
+                    // Mettre à jour l'ordre
+                    updateImageOrder(productId);
+                }
+
+                function updateImageOrder(productId) {
+                    const container = document.getElementById('images-container-' + productId);
+                    const orderInput = document.getElementById('image-order-' + productId);
+                    if (!container || !orderInput) return;
+
+                    const visibleItems = container.querySelectorAll('[draggable]:not([style*="display: none"])');
+                    const order = Array.from(visibleItems).map(el => el.dataset.img);
+                    orderInput.value = order.join(',');
+
+                    // Mettre à jour les numéros
+                    visibleItems.forEach((el, idx) => {
+                        const badge = el.querySelector('span');
+                        if (badge) badge.textContent = idx + 1;
+                    });
+                }
+
+                // Drag and Drop
+                document.querySelectorAll('.image-sortable').forEach(container => {
+                    let draggedItem = null;
+
+                    container.addEventListener('dragstart', function (e) {
+                        draggedItem = e.target.closest('[draggable]');
+                        if (draggedItem) {
+                            draggedItem.style.opacity = '0.4';
+                            e.dataTransfer.effectAllowed = 'move';
+                        }
+                    });
+
+                    container.addEventListener('dragend', function (e) {
+                        if (draggedItem) {
+                            draggedItem.style.opacity = '1';
+                            draggedItem = null;
+                        }
+                        container.querySelectorAll('[draggable]').forEach(el => el.classList.remove('border-terracotta'));
+                    });
+
+                    container.addEventListener('dragover', function (e) {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = 'move';
+                        const target = e.target.closest('[draggable]');
+                        if (target && target !== draggedItem) {
+                            container.querySelectorAll('[draggable]').forEach(el => {
+                                const img = el.querySelector('img');
+                                if (img) img.classList.remove('border-terracotta');
+                            });
+                            const img = target.querySelector('img');
+                            if (img) img.classList.add('border-terracotta');
+                        }
+                    });
+
+                    container.addEventListener('drop', function (e) {
+                        e.preventDefault();
+                        const target = e.target.closest('[draggable]');
+                        if (target && draggedItem && target !== draggedItem) {
+                            const allItems = Array.from(container.querySelectorAll('[draggable]'));
+                            const dragIdx = allItems.indexOf(draggedItem);
+                            const dropIdx = allItems.indexOf(target);
+
+                            if (dragIdx < dropIdx) {
+                                target.parentNode.insertBefore(draggedItem, target.nextSibling);
+                            } else {
+                                target.parentNode.insertBefore(draggedItem, target);
+                            }
+
+                            updateImageOrder(container.dataset.productId);
+                        }
+                    });
+                });
+            </script>
+</body>
+
+</html>
