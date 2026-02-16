@@ -1,0 +1,166 @@
+// prisma/schema.prisma — Schéma de base de données InviThé Gourmand
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id           String    @id @default(uuid())
+  name         String
+  slug         String    @unique
+  description  String?
+  imageUrl     String?   @map("image_url")
+  displayOrder Int       @default(0) @map("display_order")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  products     Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id                  String          @id @default(uuid())
+  categoryId          String          @map("category_id")
+  category            Category        @relation(fields: [categoryId], references: [id])
+  name                String
+  slug                String          @unique
+  shortDescription    String?         @map("short_description")
+  longDescription     String?         @map("long_description")
+  price               Decimal
+  promoPrice          Decimal?        @map("promo_price")
+  weight              String?
+  ingredients         String?
+  preparationTips     String?         @map("preparation_tips")
+  allergens           String?
+  stock               Int             @default(0)
+  stockAlertThreshold Int             @default(5) @map("stock_alert_threshold")
+  isActive            Boolean         @default(true) @map("is_active")
+  isFeatured          Boolean         @default(false) @map("is_featured")
+  isNew               Boolean         @default(false) @map("is_new")
+  images              String
+  tags                String
+  createdAt           DateTime        @default(now()) @map("created_at")
+  updatedAt           DateTime        @updatedAt @map("updated_at")
+  orderItems          OrderItem[]
+  stockMovements      StockMovement[]
+  reviews             Review[]
+
+  @@map("products")
+}
+
+model MenuItem {
+  id           String   @id @default(uuid())
+  section      String
+  name         String
+  description  String?
+  price        Decimal
+  isAvailable  Boolean  @default(true) @map("is_available")
+  displayOrder Int      @default(0) @map("display_order")
+
+  @@map("menu_items")
+}
+
+model Order {
+  id                    String      @id @default(uuid())
+  orderNumber           String      @unique @map("order_number")
+  customerEmail         String      @map("customer_email")
+  customerName          String      @map("customer_name")
+  customerPhone         String?     @map("customer_phone")
+  shippingAddress       String?     @map("shipping_address")
+  deliveryMethod        String      @map("delivery_method")
+  status                String      @default("pending")
+  subtotal              Decimal
+  shippingCost          Decimal     @default(0) @map("shipping_cost")
+  discount              Decimal     @default(0)
+  total                 Decimal
+  stripeSessionId       String?     @map("stripe_session_id")
+  promoCode             String?     @map("promo_code")
+  notes                 String?
+  createdAt             DateTime    @default(now()) @map("created_at")
+  updatedAt             DateTime    @updatedAt @map("updated_at")
+  items                 OrderItem[]
+  stockMovements        StockMovement[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String  @id @default(uuid())
+  orderId     String  @map("order_id")
+  order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String  @map("product_id")
+  product     Product @relation(fields: [productId], references: [id])
+  productName String  @map("product_name")
+  quantity    Int
+  unitPrice   Decimal @map("unit_price")
+  totalPrice  Decimal @map("total_price")
+
+  @@map("order_items")
+}
+
+model StockMovement {
+  id             String   @id @default(uuid())
+  productId      String   @map("product_id")
+  product        Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantityChange Int      @map("quantity_change")
+  reason         String?
+  orderId        String?  @map("order_id")
+  order          Order?   @relation(fields: [orderId], references: [id])
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@map("stock_movements")
+}
+
+model AdminUser {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("admin")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("admin_users")
+}
+
+model PromoCode {
+  id            String    @id @default(uuid())
+  code          String    @unique
+  discountType  String    @map("discount_type")
+  discountValue Decimal   @map("discount_value")
+  minOrderAmount Decimal? @map("min_order_amount")
+  maxUses       Int?      @map("max_uses")
+  currentUses   Int       @default(0) @map("current_uses")
+  isActive      Boolean   @default(true) @map("is_active")
+  expiresAt     DateTime? @map("expires_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@map("promo_codes")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  adminEmail String   @map("admin_email")
+  action     String
+  details    String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("audit_logs")
+}
+
+model Review {
+  id            String   @id @default(uuid())
+  productId     String   @map("product_id")
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  customerName  String   @map("customer_name")
+  customerEmail String   @map("customer_email")
+  rating        Int      @default(5)
+  comment       String
+  status        String   @default("pending") // pending, approved, rejected
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("reviews")
+}
