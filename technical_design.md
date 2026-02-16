@@ -9,26 +9,31 @@
 
 ```mermaid
 graph TD
+    %% Styles
+    classDef visitor fill:#E1F5FE,stroke:#0288D1,stroke-width:2px;
+    classDef admin fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px;
+    classDef usecase fill:#FFF,stroke:#333,stroke-width:1px;
+
     subgraph "Front-Office (Visiteur)"
-        V[Visiteur]
-        V -->|Consulter| UC1[Voir Accueil/Menu/Boutique]
-        V -->|Consulter| UC2[Voir Détail Produit]
-        V -->|Action| UC3[Ajouter au Panier]
-        V -->|Action| UC4[Passer Commande]
-        V -->|Action| UC5[Envoyer Message Contact]
-        V -->|Action| UC6[Laisser un Avis]
+        V[Visiteur]:::visitor
+        V -->|Consulter| UC1[Voir Accueil/Menu/Boutique]:::usecase
+        V -->|Consulter| UC2[Voir Détail Produit]:::usecase
+        V -->|Action| UC3[Ajouter au Panier]:::usecase
+        V -->|Action| UC4[Passer Commande]:::usecase
+        V -->|Action| UC5[Envoyer Message Contact]:::usecase
+        V -->|Action| UC6[Laisser un Avis]:::usecase
     end
 
     subgraph "Back-Office (Admin)"
-        A[Administrateur]
-        A -->|Auth| UC7[Login / Logout]
-        A -->|Gestion| UC8[Gérer Produits]
-        A -->|Gestion| UC9[Gérer Catégories]
-        A -->|Gestion| UC10[Gérer Commandes & Export]
-        A -->|Gestion| UC11[Gérer Stocks]
-        A -->|Gestion| UC12[Gérer Codes Promo]
-        A -->|Gestion| UC13[Modérer Avis]
-        A -->|Visualiser| UC14[Dashboard Stats]
+        A[Administrateur]:::admin
+        A -->|Auth| UC7[Login / Logout]:::usecase
+        A -->|Gestion| UC8[Gérer Produits]:::usecase
+        A -->|Gestion| UC9[Gérer Catégories]:::usecase
+        A -->|Gestion| UC10[Gérer Commandes & Export]:::usecase
+        A -->|Gestion| UC11[Gérer Stocks]:::usecase
+        A -->|Gestion| UC12[Gérer Codes Promo]:::usecase
+        A -->|Gestion| UC13[Modérer Avis]:::usecase
+        A -->|Visualiser| UC14[Dashboard Stats]:::usecase
     end
 ```
 
@@ -39,6 +44,9 @@ graph TD
 
 ```mermaid
 erDiagram
+    %% Styles via thèmes Mermaid ou config
+    %% Note: Mermaid ER diagram styling is limited compared to flowcharts.
+
     CATEGORY ||--|{ PRODUCT : "contient"
     PRODUCT ||--o{ ORDER_ITEM : "est commandé dans"
     PRODUCT ||--o{ STOCK_MOVEMENT : "a des mouvements de"
@@ -183,6 +191,12 @@ erDiagram
 
 ```mermaid
 classDiagram
+    %% Styles
+    classDef controller fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px;
+    classDef service fill:#FFF3E0,stroke:#EF6C00,stroke-width:2px;
+    classDef model fill:#E3F2FD,stroke:#1565C0,stroke-width:2px;
+    classDef app fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px;
+
     %% Relations
     App --> PublicRoutes
     App --> AdminRoutes
@@ -205,18 +219,21 @@ classDiagram
         +express()
         +listen()
     }
+    class App app
 
     class ShopController {
         +homePage()
         +productPage()
         +menuPage()
     }
+    class ShopController controller
 
     class CartController {
         +cartPage()
         +checkoutPage()
         +processCheckout()
     }
+    class CartController controller
 
     class AdminController {
         +dashboard()
@@ -225,27 +242,32 @@ classDiagram
         +exportOrders()
         +manageReviews()
     }
+    class AdminController controller
 
     class AuthController {
         +loginPage()
         +processLogin()
         +logout()
     }
+    class AuthController controller
 
     class EmailService {
         +sendOrderConfirmation()
         +sendContactEmail()
     }
+    class EmailService service
 
     class ImageService {
         +uploadMultiple()
         +optimizeImage()
     }
+    class ImageService service
 
     class StripeService {
         +createCheckoutSession()
         +handleWebhook()
     }
+    class StripeService service
 
     class PrismaClient {
         +product
@@ -253,4 +275,5 @@ classDiagram
         +order
         +user
     }
+    class PrismaClient model
 ```
