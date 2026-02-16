@@ -9,31 +9,33 @@
 
 ```mermaid
 graph TD
-    %% Styles
-    classDef visitor fill:#E1F5FE,stroke:#0288D1,stroke-width:2px;
-    classDef admin fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px;
-    classDef usecase fill:#FFF,stroke:#333,stroke-width:1px;
+    %% Custom styles
+    classDef actorStyle fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:#01579b;
+    classDef adminStyle fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#e65100;
+    classDef ucStyle fill:#ffffff,stroke:#333333,stroke-width:1px,rx:10,ry:10;
 
     subgraph "Front-Office (Visiteur)"
-        V[Visiteur]:::visitor
-        V -->|Consulter| UC1[Voir Accueil/Menu/Boutique]:::usecase
-        V -->|Consulter| UC2[Voir Détail Produit]:::usecase
-        V -->|Action| UC3[Ajouter au Panier]:::usecase
-        V -->|Action| UC4[Passer Commande]:::usecase
-        V -->|Action| UC5[Envoyer Message Contact]:::usecase
-        V -->|Action| UC6[Laisser un Avis]:::usecase
+        direction TB
+        V[Visiteur]:::actorStyle
+        V -->|Consulter| UC1([Voir Accueil/Menu/Boutique]):::ucStyle
+        V -->|Consulter| UC2([Voir Détail Produit]):::ucStyle
+        V -->|Action| UC3([Ajouter au Panier]):::ucStyle
+        V -->|Action| UC4([Passer Commande]):::ucStyle
+        V -->|Action| UC5([Envoyer Message Contact]):::ucStyle
+        V -->|Action| UC6([Laisser un Avis]):::ucStyle
     end
 
     subgraph "Back-Office (Admin)"
-        A[Administrateur]:::admin
-        A -->|Auth| UC7[Login / Logout]:::usecase
-        A -->|Gestion| UC8[Gérer Produits]:::usecase
-        A -->|Gestion| UC9[Gérer Catégories]:::usecase
-        A -->|Gestion| UC10[Gérer Commandes & Export]:::usecase
-        A -->|Gestion| UC11[Gérer Stocks]:::usecase
-        A -->|Gestion| UC12[Gérer Codes Promo]:::usecase
-        A -->|Gestion| UC13[Modérer Avis]:::usecase
-        A -->|Visualiser| UC14[Dashboard Stats]:::usecase
+        direction TB
+        A[Administrateur]:::adminStyle
+        A -->|Auth| UC7([Login / Logout]):::ucStyle
+        A -->|Gestion| UC8([Gérer Produits]):::ucStyle
+        A -->|Gestion| UC9([Gérer Catégories]):::ucStyle
+        A -->|Gestion| UC10([Gérer Commandes & Export]):::ucStyle
+        A -->|Gestion| UC11([Gérer Stocks]):::ucStyle
+        A -->|Gestion| UC12([Gérer Codes Promo]):::ucStyle
+        A -->|Gestion| UC13([Modérer Avis]):::ucStyle
+        A -->|Visualiser| UC14([Dashboard Stats]):::ucStyle
     end
 ```
 
@@ -44,9 +46,6 @@ graph TD
 
 ```mermaid
 erDiagram
-    %% Styles via thèmes Mermaid ou config
-    %% Note: Mermaid ER diagram styling is limited compared to flowcharts.
-
     CATEGORY ||--|{ PRODUCT : "contient"
     PRODUCT ||--o{ ORDER_ITEM : "est commandé dans"
     PRODUCT ||--o{ STOCK_MOVEMENT : "a des mouvements de"
@@ -192,10 +191,11 @@ erDiagram
 ```mermaid
 classDiagram
     %% Styles
-    classDef controller fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px;
-    classDef service fill:#FFF3E0,stroke:#EF6C00,stroke-width:2px;
-    classDef model fill:#E3F2FD,stroke:#1565C0,stroke-width:2px;
-    classDef app fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px;
+    classDef controller fill:#e8f5e9,stroke:#2e7d32,stroke-width:1px;
+    classDef service fill:#fff3e0,stroke:#ef6c00,stroke-width:1px;
+    classDef model fill:#e3f2fd,stroke:#1565c0,stroke-width:1px;
+    classDef app fill:#f3e5f5,stroke:#7b1fa2,stroke-width:1px;
+    classDef system fill:#ffffff,stroke:#333,stroke-width:1px;
 
     %% Relations
     App --> PublicRoutes
