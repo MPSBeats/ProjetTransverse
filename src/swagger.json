@@ -142,6 +142,134 @@
       }
     }
   },
+    "/boutique/{slug}/avis": {
+      "post": {
+        "summary": "Soumettre un avis sur un produit",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "customerName": { "type": "string" },
+                  "customerEmail": { "type": "string", "format": "email" },
+                  "rating": { "type": "integer", "minimum": 1, "maximum": 5 },
+                  "comment": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "302": {
+            "description": "Redirection après soumission"
+          }
+        }
+      }
+    },
+    "/api/cart": {
+      "get": {
+        "summary": "Récupérer le panier actuel",
+        "responses": {
+          "200": {
+            "description": "Contenu du panier",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": { "type": "array" },
+                    "total": { "type": "number" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cart/update": {
+      "put": {
+        "summary": "Mettre à jour la quantité d'un produit",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "productId": { "type": "string" },
+                  "quantity": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Panier mis à jour"
+          }
+        }
+      }
+    },
+    "/api/cart/remove": {
+      "delete": {
+        "summary": "Retirer un produit du panier",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "productId": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Produit retiré"
+          }
+        }
+      }
+    },
+    "/api/cart/promo": {
+      "post": {
+        "summary": "Appliquer un code promo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Code promo appliqué"
+          }
+        }
+      }
+    }
+  },
   "components": {
     "schemas": {
       "Product": {
