@@ -38,7 +38,19 @@ L'application suit le **pattern MVC (Modèle-Vue-Contrôleur)** classique :
 - `src/services` : Logique métier complexe (ex: envoi d'emails, gestion Stripe) découplée des contrôleurs.
 - `views/` : Templates d'interface.
 
-## 3. Expérience Utilisateur (UX)
+## 3. Documentation API (Swagger)
+
+Une documentation interactive de l'API (OpenAPI 3.0) est intégrée au projet.
+
+- **URL locale** : [`http://localhost:3000/api-docs`](http://localhost:3000/api-docs)
+- **Fichier de définition** : `src/swagger.json`
+- **Fonctionnalités documentées** :
+  - Listage et détail des produits.
+  - Ajout au panier.
+  - Processus de commande (Stripe).
+  - Gestion des contacts.
+
+## 4. Expérience Utilisateur (UX)
 
 ### Pour le Visiteur (Client)
 - **Fluidité** : Navigation rapide grâce au rendu serveur et à l'optimisation des assets.

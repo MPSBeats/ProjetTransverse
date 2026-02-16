@@ -16,6 +16,8 @@ import adminRoutes from './src/routes/admin';
 import apiRoutes from './src/routes/api';
 import NodeCache from 'node-cache';
 import ejsMate from 'ejs-mate';
+import swaggerUi from 'swagger-ui-express';
+import swaggerDocument from './src/swagger.json';
 
 /* ─── Cache global ─── */
 export const appCache = new NodeCache({ stdTTL: 60, checkperiod: 120 });
@@ -81,6 +83,7 @@ app.use('/api', apiLimiter);
 app.use('/', publicRoutes);
 app.use('/admin', adminRoutes);
 app.use('/api', apiRoutes);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 /* ─── Page 404 ─── */
 app.use((_req: Request, res: Response) => {
