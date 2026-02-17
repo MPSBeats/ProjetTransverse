@@ -14,22 +14,22 @@
         href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@600&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://unpkg.com/alpinejs@3.14.3/dist/cdn.min.js" defer></script>
 </head>
 
 <body class="bg-creme font-body antialiased">
     <!-- Sidebar + Content -->
     <div class="flex min-h-screen">
-        <%- include('../partials/admin-sidebar', { metaTitle, adminName }) %>
+        <%- include('../partials/admin-sidebar') %>
 
             <!-- Main Content -->
             <div class="flex-1 overflow-auto">
 
                 <!-- Dashboard content -->
-                <div class="p-6 lg:p-8">
-                    <div class="flex items-center justify-between mb-8">
-                        <div>
+                <div class="p-6 lg:p-8 pt-20 lg:pt-8">
+                    <div class="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
+                        <div class="text-center sm:text-left w-full sm:w-auto">
                             <h1 class="font-display text-2xl text-noir-cafe">Dashboard</h1>
                             <p class="text-sm text-brun/50 mt-1">Bienvenue, <%= adminName || 'Admin' %>
                             </p>
@@ -75,7 +75,10 @@
                         <!-- Graphique CA -->
                         <div class="lg:col-span-2 bg-blanc-casse rounded-gourmand-lg p-6 shadow-card">
                             <h2 class="font-display text-lg text-noir-cafe mb-4">Chiffre d'affaires (30 jours)</h2>
-                            <canvas id="revenueChart" height="200"></canvas>
+                            <div class="relative h-80 w-full" id="chartContainer"
+                                data-revenue="<%= JSON.stringify(typeof revenueByDay !== 'undefined' ? revenueByDay : {}) %>">
+                                <canvas id="revenueChart"></canvas>
+                            </div>
                         </div>
 
                         <!-- Alertes stock -->
@@ -121,7 +124,40 @@
                                 voir
                                 →</a>
                         </div>
-                        <div class="overflow-x-auto">
+
+                        <!-- Mobile Card View -->
+                        <div class="md:hidden space-y-4">
+                            <% recentOrders.forEach(function(order) { %>
+                                <div class="bg-creme/20 rounded-gourmand p-4 border border-creme/30">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <div>
+                                            <span
+                                                class="text-xs font-bold text-terracotta bg-terracotta/10 px-2 py-1 rounded-full">
+                                                <%= order.orderNumber %>
+                                            </span>
+                                            <p class="mt-2 font-medium text-noir-cafe">
+                                                <%= order.customerName %>
+                                            </p>
+                                        </div>
+                                        <span class="px-2 py-1 rounded-full text-[10px] font-medium"
+                                            style="background: <%= getOrderStatusColor(order.status) %>20; color: <%= getOrderStatusColor(order.status) %>;">
+                                            <%= getOrderStatusLabel(order.status) %>
+                                        </span>
+                                    </div>
+                                    <div class="flex justify-between items-center border-t border-creme/20 pt-2 mt-2">
+                                        <span class="text-xs text-brun/50">
+                                            <%= new Date(order.createdAt).toLocaleDateString('fr-FR') %>
+                                        </span>
+                                        <span class="font-bold text-noir-cafe">
+                                            <%= formatPrice(order.total) %>
+                                        </span>
+                                    </div>
+                                </div>
+                                <% }); %>
+                        </div>
+
+                        <!-- Desktop Table View -->
+                        <div class="hidden md:block overflow-x-auto">
                             <table class="w-full text-sm">
                                 <thead>
                                     <tr class="border-b border-creme text-left text-brun/50">
@@ -163,7 +199,38 @@
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
                         <div class="bg-blanc-casse rounded-gourmand-lg p-6 shadow-card">
                             <h2 class="font-display text-lg text-noir-cafe mb-4">📊 CA par catégorie</h2>
-                            <div class="overflow-x-auto">
+                            <!-- Mobile Card View -->
+                            <div class="md:hidden space-y-4">
+                                <% if (typeof categoryStats !=='undefined' ) { categoryStats.forEach(function(cat) { %>
+                                    <div class="bg-creme/20 rounded-gourmand p-4 border border-creme/30">
+                                        <div class="flex justify-between items-start mb-2">
+                                            <span class="font-medium text-noir-cafe">
+                                                <%= cat.name %>
+                                            </span>
+                                            <span class="font-bold text-terracotta">
+                                                <%= formatPrice(cat.revenue) %>
+                                            </span>
+                                        </div>
+                                        <div class="text-xs text-brun/60 space-y-1">
+                                            <div class="flex justify-between">
+                                                <span>Top produit:</span>
+                                                <span class="font-medium">
+                                                    <%= cat.topProduct %>
+                                                </span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span>Ventes:</span>
+                                                <span>
+                                                    <%= cat.topProductQty %>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <% }); } %>
+                            </div>
+
+                            <!-- Desktop Table View -->
+                            <div class="hidden md:block overflow-x-auto">
                                 <table class="w-full text-sm">
                                     <thead>
                                         <tr class="border-b border-creme text-left text-brun/50">
@@ -226,39 +293,88 @@
     <!-- Chart.js script -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const revenueData = <% - JSON.stringify(revenueByDay) %>;
-            const labels = Object.keys(revenueData).map(d => {
-                const [y, m, day] = d.split('-');
-                return day + '/' + m;
-            });
-            const values = Object.values(revenueData);
+            try {
+                // Safe data retrieval from data attribute
+                const container = document.getElementById('chartContainer');
+                let revenueData = {};
 
-            new Chart(document.getElementById('revenueChart'), {
-                type: 'line',
-                data: {
-                    labels,
-                    datasets: [{
-                        label: 'CA (€)',
-                        data: values,
-                        borderColor: '#C4704B',
-                        backgroundColor: 'rgba(196, 112, 75, 0.1)',
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 2,
-                        pointHoverRadius: 5,
-                        borderWidth: 2,
-                    }],
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, ticks: { callback: v => v + ' €' }, grid: { color: 'rgba(0,0,0,0.05)' } },
-                        x: { grid: { display: false }, ticks: { maxTicksLimit: 10 } },
+                if (container && container.dataset.revenue) {
+                    try {
+                        revenueData = JSON.parse(container.dataset.revenue);
+                    } catch (e) {
+                        console.error('Failed to parse revenue data', e);
+                    }
+                }
+
+                console.log('Revenue Data (Parsed):', revenueData);
+                window.debugRevenueData = revenueData;
+
+                // Check if data is empty
+                if (!revenueData || Object.keys(revenueData).length === 0) {
+                    console.warn('Revenue data is empty');
+                    const ctx = document.getElementById('revenueChart');
+                    if (ctx) {
+                        ctx.parentElement.innerHTML = '<div class="flex items-center justify-center h-full text-brun/50">Pas de données (0 commandes)</div>';
+                    }
+                    return;
+                }
+
+                const ctx = document.getElementById('revenueChart');
+                if (!ctx) return;
+
+                // Sort keys to ensure chronological order
+                const sortedKeys = Object.keys(revenueData).sort();
+
+                const labels = sortedKeys.map(d => {
+                    const parts = d.split('-');
+                    if (parts.length === 3) {
+                        return parts[2] + '/' + parts[1];
+                    }
+                    return d;
+                });
+
+                const values = sortedKeys.map(k => revenueData[k]);
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'CA (€)',
+                            data: values,
+                            borderColor: '#C4704B',
+                            backgroundColor: 'rgba(196, 112, 75, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 2,
+                            pointHoverRadius: 5,
+                            borderWidth: 2,
+                        }],
                     },
-                },
-            });
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { callback: v => v + ' €' },
+                                grid: { color: 'rgba(0,0,0,0.05)' }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { maxTicksLimit: 10 }
+                            },
+                        },
+                    },
+                });
+            } catch (err) {
+                console.error('Chart error:', err);
+                const ctx = document.getElementById('revenueChart');
+                if (ctx) {
+                    ctx.parentElement.innerHTML = '<div class="text-red-500 p-4">Erreur: ' + err.message + '</div>';
+                }
+            }
         });
     </script>
 </body>
