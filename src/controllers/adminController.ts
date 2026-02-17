@@ -7,6 +7,20 @@ import { slugify } from '../utils/slugify';
 import { optimizeImage, optimizeImages, deleteImageFiles } from '../services/imageService';
 
 /**
+ * Récupère les commandes non payées (en attente) pour les notifications
+ */
+async function getUnpaidOrders() {
+    return await prisma.order.findMany({
+        where: {
+            status: { not: 'cancelled' },
+            isPaid: false,
+        },
+        include: { items: true },
+        orderBy: { createdAt: 'desc' },
+    });
+}
+
+/**
  * Dashboard admin — KPIs, graphique CA, top produits, alertes stock
  */
 export async function dashboard(req: Request, res: Response): Promise<void> {
@@ -16,7 +30,7 @@ export async function dashboard(req: Request, res: Response): Promise<void> {
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
         // KPIs
-        const [todayOrders, monthOrders, allOrders, recentOrders, stockAlerts] = await Promise.all([
+        const [todayOrders, monthOrders, allOrders, recentOrders, stockAlerts, unpaidOrders] = await Promise.all([
             prisma.order.findMany({
                 where: { createdAt: { gte: startOfDay }, status: { not: 'cancelled' } },
             }),
@@ -36,6 +50,7 @@ export async function dashboard(req: Request, res: Response): Promise<void> {
                     stock: { lte: prisma.product.fields.stockAlertThreshold as unknown as number },
                 },
             }),
+            getUnpaidOrders(),
         ]);
 
         // Récupérer les alertes de stock manuellement (le filtre Prisma ne supporte pas la comparaison entre colonnes directement)
@@ -107,6 +122,7 @@ export async function dashboard(req: Request, res: Response): Promise<void> {
         // Avis en attente
         const pendingReviews = await prisma.review.count({ where: { status: 'pending' } });
 
+        console.log('DEBUG DASHBOARD - RevenueByDay:', JSON.stringify(revenueByDay));
         res.render('admin/dashboard', {
             metaTitle: 'Dashboard Admin — L\'InviThé Gourmand',
             metaDescription: '', canonicalUrl: '',
@@ -118,6 +134,7 @@ export async function dashboard(req: Request, res: Response): Promise<void> {
             revenueByDay,
             categoryStats,
             pendingReviews,
+            unpaidOrders,
             formatPrice,
             getOrderStatusLabel,
             getOrderStatusColor,
@@ -151,13 +168,14 @@ export async function productsPage(req: Request, res: Response): Promise<void> {
             where.categoryId = categoryFilter;
         }
 
-        const [products, categories] = await Promise.all([
+        const [products, categories, unpaidOrders] = await Promise.all([
             prisma.product.findMany({
                 where,
                 include: { category: true },
                 orderBy: { createdAt: 'desc' },
             }),
             prisma.category.findMany({ orderBy: { displayOrder: 'asc' } }),
+            getUnpaidOrders(),
         ]);
 
         res.render('admin/products', {
@@ -165,6 +183,7 @@ export async function productsPage(req: Request, res: Response): Promise<void> {
             adminName: req.session.adminName,
             products,
             categories,
+            unpaidOrders,
             currentSearch: search || '',
             currentCategory: categoryFilter || '',
             formatPrice,
@@ -382,6 +401,40 @@ export async function deleteProduct(req: Request, res: Response): Promise<void> 
 }
 
 /**
+ * Supprimer une commande (POST /admin/commandes/:id/delete)
+ */
+export async function deleteOrder(req: Request, res: Response): Promise<void> {
+    try {
+        const { id } = req.params;
+        const order = await prisma.order.findUnique({ where: { id } });
+
+        if (!order) {
+            res.redirect('/admin/commandes?error=notfound');
+            return;
+        }
+
+        // Supprimer la commande (les items seront supprimés via cascade si configuré, sinon prisma handle)
+        // Note: Assurez-vous que le schéma Prisma a onDelete: Cascade pour OrderItem
+        await prisma.order.delete({ where: { id } });
+
+        await prisma.auditLog.create({
+            data: {
+                adminEmail: req.session.adminEmail || '',
+                action: 'ORDER_DELETE',
+                details: `Commande supprimée : ${order.orderNumber} (${id})`,
+            },
+        });
+
+        // Redirection vers la page précédente si possible, sinon commandes
+        const referer = req.get('Referer') || '/admin/commandes';
+        res.redirect(referer + (referer.includes('?') ? '&' : '?') + 'success=deleted');
+    } catch (error) {
+        console.error('❌ Erreur suppression commande :', error);
+        res.redirect('/admin/commandes?error=delete');
+    }
+}
+
+/**
  * Page gestion commandes (/admin/commandes)
  */
 export async function ordersPage(req: Request, res: Response): Promise<void> {
@@ -390,16 +443,20 @@ export async function ordersPage(req: Request, res: Response): Promise<void> {
         const where: any = {};
         if (statusFilter) where.status = statusFilter;
 
-        const orders = await prisma.order.findMany({
-            where,
-            include: { items: true },
-            orderBy: { createdAt: 'desc' },
-        });
+        const [orders, unpaidOrders] = await Promise.all([
+            prisma.order.findMany({
+                where,
+                include: { items: true },
+                orderBy: { createdAt: 'desc' },
+            }),
+            getUnpaidOrders(),
+        ]);
 
         res.render('admin/orders', {
             metaTitle: 'Gestion Commandes — Admin', metaDescription: '', canonicalUrl: '',
             adminName: req.session.adminName,
             orders,
+            unpaidOrders,
             currentStatus: statusFilter || '',
             formatPrice,
             getOrderStatusLabel,
@@ -419,16 +476,20 @@ export async function ordersPage(req: Request, res: Response): Promise<void> {
  */
 export async function stocksPage(req: Request, res: Response): Promise<void> {
     try {
-        const products = await prisma.product.findMany({
-            where: { isActive: true },
-            include: { category: true },
-            orderBy: [{ stock: 'asc' }],
-        });
+        const [products, unpaidOrders] = await Promise.all([
+            prisma.product.findMany({
+                where: { isActive: true },
+                include: { category: true },
+                orderBy: [{ stock: 'asc' }],
+            }),
+            getUnpaidOrders(),
+        ]);
 
         res.render('admin/stocks', {
             metaTitle: 'Gestion Stocks — Admin', metaDescription: '', canonicalUrl: '',
             adminName: req.session.adminName,
             products,
+            unpaidOrders,
             formatPrice,
             getStockStatus,
             parseJsonArray,
@@ -451,17 +512,22 @@ export async function stocksPage(req: Request, res: Response): Promise<void> {
 export async function apiUpdateOrderStatus(req: Request, res: Response): Promise<void> {
     try {
         const { id } = req.params;
-        const { status } = req.body;
+        const { status, isPaid } = req.body; // Add isPaid
         const validStatuses = ['pending', 'paid', 'preparing', 'ready', 'shipped', 'delivered', 'cancelled'];
 
-        if (!validStatuses.includes(status)) {
+        // Allow status update OR isPaid update
+        if (status && !validStatuses.includes(status)) {
             res.status(400).json({ success: false, error: 'Statut invalide' });
             return;
         }
 
+        const data: any = {};
+        if (status) data.status = status;
+        if (isPaid !== undefined) data.isPaid = isPaid;
+
         const order = await prisma.order.update({
             where: { id },
-            data: { status },
+            data,
         });
 
         // Log d'audit
@@ -469,7 +535,7 @@ export async function apiUpdateOrderStatus(req: Request, res: Response): Promise
             data: {
                 adminEmail: req.session.adminEmail || '',
                 action: 'ORDER_STATUS_UPDATE',
-                details: `Commande ${order.orderNumber} → ${status}`,
+                details: `Commande ${order.orderNumber} : ${status ? 'Statut -> ' + status : ''} ${isPaid !== undefined ? 'Payée -> ' + isPaid : ''}`,
             },
         });
 
@@ -536,15 +602,19 @@ export async function apiUpdateStock(req: Request, res: Response): Promise<void>
  */
 export async function categoriesPage(req: Request, res: Response): Promise<void> {
     try {
-        const categories = await prisma.category.findMany({
-            orderBy: { displayOrder: 'asc' },
-            include: { _count: { select: { products: true } } },
-        });
+        const [categories, unpaidOrders] = await Promise.all([
+            prisma.category.findMany({
+                orderBy: { displayOrder: 'asc' },
+                include: { _count: { select: { products: true } } },
+            }),
+            getUnpaidOrders(),
+        ]);
 
         res.render('admin/categories', {
             metaTitle: 'Gestion Catégories — Admin', metaDescription: '', canonicalUrl: '',
             adminName: req.session.adminName,
             categories,
+            unpaidOrders,
         });
     } catch (error) {
         console.error('❌ Erreur page catégories :', error);
@@ -665,14 +735,18 @@ export async function deleteCategory(req: Request, res: Response): Promise<void>
  */
 export async function promoCodesPage(req: Request, res: Response): Promise<void> {
     try {
-        const promos = await prisma.promoCode.findMany({
-            orderBy: { createdAt: 'desc' },
-        });
+        const [promos, unpaidOrders] = await Promise.all([
+            prisma.promoCode.findMany({
+                orderBy: { createdAt: 'desc' },
+            }),
+            getUnpaidOrders(),
+        ]);
 
         res.render('admin/promos', {
             metaTitle: 'Codes Promo — Admin', metaDescription: '', canonicalUrl: '',
             adminName: req.session.adminName,
             promos,
+            unpaidOrders,
             formatPrice,
         });
     } catch (error) {
@@ -856,18 +930,20 @@ export async function reviewsPage(req: Request, res: Response): Promise<void> {
         const where: any = {};
         if (status !== 'all') where.status = status;
 
-        const reviews = await prisma.review.findMany({
-            where,
-            include: { product: { select: { name: true, slug: true } } },
-            orderBy: { createdAt: 'desc' },
-        });
-
-        const counts = {
-            all: await prisma.review.count(),
-            pending: await prisma.review.count({ where: { status: 'pending' } }),
-            approved: await prisma.review.count({ where: { status: 'approved' } }),
-            rejected: await prisma.review.count({ where: { status: 'rejected' } }),
-        };
+        const [reviews, unpaidOrders, counts] = await Promise.all([
+            prisma.review.findMany({
+                where,
+                include: { product: { select: { name: true, slug: true } } },
+                orderBy: { createdAt: 'desc' },
+            }),
+            getUnpaidOrders(),
+            (async () => ({
+                all: await prisma.review.count(),
+                pending: await prisma.review.count({ where: { status: 'pending' } }),
+                approved: await prisma.review.count({ where: { status: 'approved' } }),
+                rejected: await prisma.review.count({ where: { status: 'rejected' } }),
+            }))()
+        ]);
 
         res.render('admin/reviews', {
             metaTitle: 'Avis clients — Admin',
@@ -876,6 +952,7 @@ export async function reviewsPage(req: Request, res: Response): Promise<void> {
             reviews,
             currentStatus: status,
             counts,
+            unpaidOrders,
             formatPrice,
         });
     } catch (error) {

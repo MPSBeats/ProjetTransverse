@@ -53,37 +53,39 @@ model Product {
 }
 
 model MenuItem {
-  id           String   @id @default(uuid())
+  id           String  @id @default(uuid())
   section      String
   name         String
   description  String?
   price        Decimal
-  isAvailable  Boolean  @default(true) @map("is_available")
-  displayOrder Int      @default(0) @map("display_order")
+  isAvailable  Boolean @default(true) @map("is_available")
+  displayOrder Int     @default(0) @map("display_order")
 
   @@map("menu_items")
 }
 
 model Order {
-  id                    String      @id @default(uuid())
-  orderNumber           String      @unique @map("order_number")
-  customerEmail         String      @map("customer_email")
-  customerName          String      @map("customer_name")
-  customerPhone         String?     @map("customer_phone")
-  shippingAddress       String?     @map("shipping_address")
-  deliveryMethod        String      @map("delivery_method")
-  status                String      @default("pending")
-  subtotal              Decimal
-  shippingCost          Decimal     @default(0) @map("shipping_cost")
-  discount              Decimal     @default(0)
-  total                 Decimal
-  stripeSessionId       String?     @map("stripe_session_id")
-  promoCode             String?     @map("promo_code")
-  notes                 String?
-  createdAt             DateTime    @default(now()) @map("created_at")
-  updatedAt             DateTime    @updatedAt @map("updated_at")
-  items                 OrderItem[]
-  stockMovements        StockMovement[]
+  id              String          @id @default(uuid())
+  orderNumber     String          @unique @map("order_number")
+  customerEmail   String          @map("customer_email")
+  customerName    String          @map("customer_name")
+  customerPhone   String?         @map("customer_phone")
+  shippingAddress String?         @map("shipping_address")
+  deliveryMethod  String          @map("delivery_method")
+  deliverySlot    String?         @map("delivery_slot")
+  status          String          @default("pending")
+  isPaid          Boolean         @default(false) @map("is_paid")
+  subtotal        Decimal
+  shippingCost    Decimal         @default(0) @map("shipping_cost")
+  discount        Decimal         @default(0)
+  total           Decimal
+  stripeSessionId String?         @map("stripe_session_id")
+  promoCode       String?         @map("promo_code")
+  notes           String?
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+  items           OrderItem[]
+  stockMovements  StockMovement[]
 
   @@map("orders")
 }
@@ -127,16 +129,16 @@ model AdminUser {
 }
 
 model PromoCode {
-  id            String    @id @default(uuid())
-  code          String    @unique
-  discountType  String    @map("discount_type")
-  discountValue Decimal   @map("discount_value")
-  minOrderAmount Decimal? @map("min_order_amount")
-  maxUses       Int?      @map("max_uses")
-  currentUses   Int       @default(0) @map("current_uses")
-  isActive      Boolean   @default(true) @map("is_active")
-  expiresAt     DateTime? @map("expires_at")
-  createdAt     DateTime  @default(now()) @map("created_at")
+  id             String    @id @default(uuid())
+  code           String    @unique
+  discountType   String    @map("discount_type")
+  discountValue  Decimal   @map("discount_value")
+  minOrderAmount Decimal?  @map("min_order_amount")
+  maxUses        Int?      @map("max_uses")
+  currentUses    Int       @default(0) @map("current_uses")
+  isActive       Boolean   @default(true) @map("is_active")
+  expiresAt      DateTime? @map("expires_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
 
   @@map("promo_codes")
 }
