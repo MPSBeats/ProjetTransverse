@@ -24,10 +24,13 @@ export const checkoutSchema = z.object({
     customerName: z.string().min(2, 'Nom requis').max(100),
     customerEmail: z.string().email('Email invalide'),
     customerPhone: z.string().min(10, 'Téléphone invalide').max(20),
+    country: z.string().optional(),
     deliveryMethod: z.enum(['pickup', 'delivery']),
     shippingAddress: z.string().optional(),
     shippingCity: z.string().optional(),
     shippingPostalCode: z.string().optional(),
+    deliveryDate: z.string().refine((val) => !isNaN(Date.parse(val)), 'Date invalide'),
+    deliveryTime: z.string().regex(/^(10|11|12|13|14|15|16|17|18):00$/, 'Heure invalide (10h-18h)'),
     notes: z.string().max(500).optional(),
 });
 

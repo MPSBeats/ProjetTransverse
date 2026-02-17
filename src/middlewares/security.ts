@@ -42,10 +42,12 @@ export function setupSecurity(app: Express): void {
                 connectSrc: [
                     "'self'",
                     "https://api.stripe.com",
+                    "https://cdn.jsdelivr.net",
                 ],
                 objectSrc: ["'none'"],
                 mediaSrc: ["'self'"],
                 workerSrc: ["'self'", "blob:"],
+                formAction: ["'self'", "https://checkout.stripe.com", "https://*.stripe.com"],
             },
         },
         crossOriginEmbedderPolicy: false, // Nécessaire pour les images externes
