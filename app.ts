@@ -11,6 +11,7 @@ import session from 'express-session';
 // import MySQLSessionStore from 'express-mysql-session';
 import { setupSecurity } from './src/middlewares/security';
 import { apiLimiter } from './src/middlewares/rateLimiter';
+import { globalLimiter } from './src/middlewares/globalLimiter';
 import publicRoutes from './src/routes/public';
 import adminRoutes from './src/routes/admin';
 import apiRoutes from './src/routes/api';
@@ -35,6 +36,9 @@ app.use(compression());
 
 /* ─── Sécurité Helmet ─── */
 setupSecurity(app);
+
+/* ─── Rate Limiting Global ─── */
+app.use(globalLimiter);
 
 /* ─── Fichiers statiques avec cache long ─── */
 app.use(express.static(path.join(__dirname, 'public'), {
