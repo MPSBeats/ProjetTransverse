@@ -46,6 +46,9 @@ router.get('/panier', cartPage);
 router.get('/checkout', checkoutPage);
 router.post('/checkout', checkoutLimiter, validateBody(checkoutSchema), processCheckout);
 router.get('/confirmation', confirmationPage);
+router.get('/commande/:id/facture', (req, res, next) => {
+    import('../controllers/cartController').then(c => c.downloadInvoice(req, res)).catch(next);
+});
 
 /* ─── Avis clients (soumission publique) ─── */
 router.post('/boutique/:slug/avis', contactLimiter, validateBody(reviewSchema), async (req, res) => {

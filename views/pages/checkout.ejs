@@ -64,6 +64,65 @@
                         </label>
                     </div>
 
+                    <!-- Créneau de retrait/livraison -->
+                    <div class="mt-6 border-t border-creme pt-6" x-data="deliverySlot()" x-init="init()">
+                        <h3 class="font-display text-lg text-noir-cafe mb-3">
+                            <span x-text="delivery === 'pickup' ? 'Date de retrait' : 'Date de livraison'"></span>
+                        </h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="deliveryDate" class="block text-sm font-medium text-brun mb-1">Date
+                                    *</label>
+                                <input type="date" id="deliveryDate" name="deliveryDate" required x-model="date"
+                                    :min="minDate" @change="validateDate"
+                                    class="w-full px-4 py-3 rounded-gourmand border border-creme focus:border-terracotta focus:ring-2 focus:ring-terracotta/20 outline-none transition-all bg-creme/30">
+                                <p x-show="dateError" class="text-xs text-red-500 mt-1" x-text="dateError"></p>
+                            </div>
+                            <div>
+                                <label for="deliveryTime" class="block text-sm font-medium text-brun mb-1">Heure
+                                    *</label>
+                                <select id="deliveryTime" name="deliveryTime" required x-model="time"
+                                    class="w-full px-4 py-3 rounded-gourmand border border-creme focus:border-terracotta focus:ring-2 focus:ring-terracotta/20 outline-none transition-all bg-creme/30">
+                                    <option value="">Choisir...</option>
+                                    <template x-for="hour in hours" :key="hour">
+                                        <option :value="hour" x-text="hour"></option>
+                                    </template>
+                                </select>
+                                <p class="text-xs text-brun/50 mt-1">Du lundi au samedi, 10h - 18h</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <script>
+                        document.addEventListener('alpine:init', () => {
+                            Alpine.data('deliverySlot', () => ({
+                                date: '',
+                                time: '',
+                                minDate: new Date().toISOString().split('T')[0],
+                                dateError: '',
+                                hours: ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'],
+
+                                init() {
+                                    // Set default if needed
+                                },
+
+                                validateDate() {
+                                    if (!this.date) return;
+                                    const selectedDate = new Date(this.date);
+                                    const day = selectedDate.getDay();
+
+                                    // 0 = Sunday
+                                    if (day === 0) {
+                                        this.dateError = 'Le dimanche est fermé. Veuillez choisir un autre jour.';
+                                        this.date = '';
+                                    } else {
+                                        this.dateError = '';
+                                    }
+                                }
+                            }))
+                        })
+                    </script>
+
                     <!-- Adresse de livraison -->
                     <div x-show="delivery === 'delivery'" x-transition class="mt-4 space-y-4" style="display: none;">
                         <div>
