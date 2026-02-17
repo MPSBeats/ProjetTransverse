@@ -82,12 +82,19 @@ export async function processCheckout(req: Request, res: Response): Promise<void
             return;
         }
 
-        const { customerName, customerEmail, customerPhone, deliveryMethod, notes } = req.body;
+        const { customerName, customerEmail, customerPhone, deliveryMethod, notes, deliveryDate, deliveryTime } = req.body;
+
+        let deliverySlot = null;
+        if (deliveryDate && deliveryTime) {
+            deliverySlot = `${deliveryDate} ${deliveryTime}`;
+        }
+
         const shippingAddress = deliveryMethod === 'delivery'
             ? JSON.stringify({
                 address: req.body.shippingAddress || '',
                 city: req.body.shippingCity || '',
                 postalCode: req.body.shippingPostalCode || '',
+                country: req.body.country || '',
             })
             : null;
 
@@ -125,6 +132,7 @@ export async function processCheckout(req: Request, res: Response): Promise<void
                 customerPhone,
                 shippingAddress,
                 deliveryMethod,
+                deliverySlot,
                 status: 'pending',
                 subtotal,
                 shippingCost,
@@ -245,12 +253,19 @@ export async function confirmationPage(req: Request, res: Response): Promise<voi
             total: 0,
         };
 
-        res.render('pages/confirmation', {
-            metaTitle: "Commande confirmée — L'InviThé Gourmand",
-            metaDescription: '',
-            canonicalUrl: '',
-            order,
-            formatPrice,
+        // Empêcher la mise en cache de la page de confirmation
+        res.header('Cache-Control', 'no-store');
+
+        req.session.save((err) => {
+            if (err) console.error('❌ Erreur sauvegarde session après commande :', err);
+
+            res.render('pages/confirmation', {
+                metaTitle: "Commande confirmée — L'InviThé Gourmand",
+                metaDescription: '',
+                canonicalUrl: '',
+                order,
+                formatPrice,
+            });
         });
     } catch (error) {
         console.error('❌ Erreur confirmation :', error);
@@ -429,5 +444,35 @@ export async function apiApplyPromo(req: Request, res: Response): Promise<void> 
     } catch (error) {
         console.error('❌ Erreur code promo :', error);
         res.status(500).json({ success: false, error: 'Erreur serveur' });
+    }
+}
+
+/**
+ * GET /commande/:id/facture — Télécharger la facture PDF
+ */
+export async function downloadInvoice(req: Request, res: Response): Promise<void> {
+    try {
+        const { id } = req.params;
+        const order = await prisma.order.findUnique({
+            where: { id },
+            include: { items: true },
+        });
+
+        if (!order) {
+            res.status(404).send('Commande introuvable');
+            return;
+        }
+
+        const { generateInvoice } = await import('../services/pdfService');
+        const doc = await generateInvoice(order);
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=facture-${order.orderNumber}.pdf`);
+
+        doc.pipe(res);
+        doc.end();
+    } catch (error) {
+        console.error('❌ Erreur téléchargement facture :', error);
+        res.status(500).send('Erreur lors de la génération de la facture');
     }
 }
