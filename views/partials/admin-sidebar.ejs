@@ -1,22 +1,204 @@
 <!-- views/partials/admin-sidebar.ejs — Barre latérale admin (réutilisable) -->
 
-<!-- Bouton burger mobile -->
-<button id="admin-sidebar-toggle"
-    class="fixed top-4 left-4 z-50 lg:hidden p-2 bg-noir-cafe text-creme rounded-gourmand shadow-warm-lg"
-    onclick="document.getElementById('admin-sidebar').classList.toggle('-translate-x-full')">
-    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-    </svg>
-</button>
+<!-- Floating Mobile Actions (Visible only on LG screens and below) -->
+<div class="lg:hidden">
+    <!-- Burger Menu (Fixed Left) -->
+    <button id="admin-sidebar-toggle"
+        class="fixed top-4 left-4 z-50 p-2.5 bg-white/90 backdrop-blur-md shadow-sm border border-creme/20 text-noir-cafe rounded-full hover:bg-creme/10 transition-all active:scale-95"
+        onclick="document.getElementById('admin-sidebar').classList.toggle('-translate-x-full'); document.getElementById('admin-sidebar-overlay').classList.toggle('hidden')">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+    </button>
+
+    <!-- Notification Bell (Fixed Right) - ONLY ON ORDERS PAGE -->
+    <% if (typeof metaTitle !=='undefined' && metaTitle==='Gestion Commandes — Admin' ) { %>
+        <div x-data="{ showNotifications: false }"
+            x-init="$watch('showNotifications', value => document.body.classList.toggle('overflow-hidden', value))">
+
+            <template x-teleport="body">
+                <button @click="showNotifications = !showNotifications"
+                    style="position: fixed; top: 1.5rem; right: 1rem;"
+                    class="fixed top-2 right-2 z-[105] p-2.5 bg-white/90 backdrop-blur-md shadow-sm border border-creme/20 text-noir-cafe rounded-full hover:bg-creme/10 transition-all active:scale-95">
+
+                    <!-- Icone Cloche (Closed) -->
+                    <svg x-show="!showNotifications" class="w-6 h-6" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+
+                    <!-- Icone Croix (Open) -->
+                    <svg x-show="showNotifications" class="w-6 h-6" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+
+                    <% if (typeof unpaidOrders !=='undefined' && unpaidOrders && unpaidOrders.length> 0) { %>
+                        <span x-show="!showNotifications"
+                            class="absolute top-0 right-0 w-4 h-4 bg-terracotta text-white text-[10px] font-bold flex items-center justify-center rounded-full animate-bounce shadow-sm ring-2 ring-white">
+                            <%= unpaidOrders.length %>
+                        </span>
+                        <% } %>
+                </button>
+            </template>
+
+            <!-- Modal Notifications -->
+            <template x-teleport="body">
+                <div x-show="showNotifications"
+                    class="fixed inset-0 z-[100] flex items-center justify-center px-4 safe-area-inset-bottom"
+                    style="display: none;">
+
+                    <!-- Backdrop -->
+                    <div class="absolute inset-0 bg-noir-cafe/60 backdrop-blur-sm" @click="showNotifications = false"
+                        x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0"
+                        x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200"
+                        x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+                    </div>
+
+                    <!-- Modal Content -->
+                    <div class="bg-white rounded-gourmand-lg w-full max-w-sm flex flex-col shadow-xl transform transition-all relative z-10 overflow-hidden"
+                        style="max-height: 85vh;" x-transition:enter="ease-out duration-300"
+                        x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                        x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                        x-transition:leave="ease-in duration-200"
+                        x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                        x-transition:leave-end="opacity-0 translate-y-4 scale-95">
+
+                        <!-- Modal Header Removed -->
+
+                        <div class="overflow-y-auto p-4 space-y-4 bg-blanc-casse flex-1 min-h-0 overscroll-contain"
+                            style="touch-action: pan-y;">
+                            <% if (typeof unpaidOrders !=='undefined' && unpaidOrders && unpaidOrders.length> 0) { %>
+                                <% unpaidOrders.forEach(order=> { %>
+                                    <!-- Carte Commande -->
+                                    <div
+                                        class="bg-white rounded-gourmand shadow-sm p-4 border border-creme/20 flex flex-col gap-3 group">
+                                        <!-- Header: Name/Date + Badge -->
+                                        <div class="flex justify-between items-start gap-4">
+                                            <div class="min-w-0">
+                                                <p class="font-display text-lg text-noir-cafe leading-snug truncate">
+                                                    <%= order.customerName %>
+                                                </p>
+                                                <p class="text-xs text-brun/50">
+                                                    <%= new Date(order.createdAt).toLocaleDateString('fr-FR', {
+                                                        day: 'numeric' , month: 'long' }) %>
+                                                        à <%= new Date(order.createdAt).toLocaleTimeString('fr-FR', {
+                                                            hour: '2-digit' , minute:'2-digit' }) %>
+                                                </p>
+                                            </div>
+                                            <span
+                                                class="shrink-0 text-xs font-bold text-terracotta bg-terracotta/10 px-2.5 py-1 rounded-full whitespace-nowrap">
+                                                <%= order.orderNumber %>
+                                            </span>
+                                        </div>
+
+                                        <!-- Articles Preview -->
+                                        <div class="space-y-1">
+                                            <% order.items.slice(0, 2).forEach(item=> { %>
+                                                <div class="flex justify-between text-sm">
+                                                    <span class="text-brun/80 truncate">
+                                                        <span class="font-bold text-terracotta">
+                                                            <%= item.quantity %>x
+                                                        </span>
+                                                        <%= item.productName %>
+                                                    </span>
+                                                </div>
+                                                <% }) %>
+                                                    <% if (order.items.length> 2) { %>
+                                                        <p class="text-xs text-brun/40 italic">+ <%= order.items.length
+                                                                - 2 %> autres...</p>
+                                                        <% } %>
+                                        </div>
+
+                                        <!-- Footer: Price + Actions + Delivery -->
+                                        <div
+                                            class="flex items-center justify-between border-t border-creme/10 pt-3 mt-auto">
+                                            <div class="flex flex-col">
+                                                <span class="font-display text-lg text-noir-cafe">
+                                                    <%= formatPrice(Number(order.total)) %>
+                                                </span>
+                                                <span class="text-[10px] text-brun/40 flex items-center gap-1">
+                                                    <%= order.deliveryMethod==='pickup' ? '📍 Retrait' : '🚚 Livraison'
+                                                        %>
+                                                </span>
+                                            </div>
+
+                                            <div class="flex items-center gap-2">
+                                                <!-- Delete Button (Only if cancelled) -->
+                                                <% if (['cancelled', 'canceled' , 'CANCELLED' , 'annulée'
+                                                    ].includes(order.status.toLowerCase())) { %>
+                                                    <button
+                                                        onclick="if(confirm('Supprimer la commande <%= order.orderNumber %> ?\nCette action est irréversible.')) { fetch('/admin/commandes/<%= order.id %>/delete', { method: 'POST' }).then(() => window.location.reload()); }"
+                                                        class="p-2 text-brun/30 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                                                        title="Supprimer">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                            viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </button>
+                                                    <% } %>
+
+                                                        <!-- Checkbox Paiement -->
+                                                        <div class="flex items-center gap-2 bg-creme/10 px-3 py-1.5 rounded-gourmand hover:bg-creme/20 transition-colors cursor-pointer"
+                                                            onclick="document.getElementById('modal-paid-<%= order.id %>').click()">
+                                                            <input type="checkbox" id="modal-paid-<%= order.id %>"
+                                                                onclick="event.stopPropagation()" onchange="fetch('/api/admin/orders/<%= order.id %>/status', { 
+                                                            method: 'PUT', 
+                                                            headers: { 'Content-Type': 'application/json' }, 
+                                                            body: JSON.stringify({ isPaid: this.checked }) 
+                                                        }).then(() => location.reload())"
+                                                                class="w-4 h-4 text-terracotta rounded focus:ring-terracotta cursor-pointer accent-terracotta">
+                                                            <label for="modal-paid-<%= order.id %>"
+                                                                class="text-xs font-medium text-noir-cafe cursor-pointer select-none">
+                                                                Payée
+                                                            </label>
+                                                        </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <% }) %>
+                                        <% } else { %>
+                                            <div class="text-center py-8 text-brun/60 flex flex-col items-center">
+                                                <svg class="w-12 h-12 text-creme mb-3" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="1"
+                                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                <p>Tout est à jour !</p>
+                                            </div>
+                                            <% } %>
+                        </div>
+
+
+
+                        <!-- Footer Actions -->
+                        <div class="p-4 border-t border-creme/10 bg-blanc-casse/50">
+                            <button @click="showNotifications = false"
+                                class="w-full py-2 text-center text-sm font-medium text-brun/60 hover:text-brun hover:bg-creme/10 rounded-gourmand transition-colors">
+                                Fermer
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </template>
+        </div>
+        <% } %>
+</div>
 
 <!-- Overlay mobile -->
-<div id="admin-sidebar-overlay" class="fixed inset-0 bg-noir-cafe/50 z-30 lg:hidden hidden"
+<div id="admin-sidebar-overlay" class="fixed inset-0 bg-noir-cafe/50 z-45 lg:hidden hidden"
     onclick="document.getElementById('admin-sidebar').classList.add('-translate-x-full'); this.classList.add('hidden')">
 </div>
 
 <!-- Sidebar -->
 <aside id="admin-sidebar"
-    class="w-64 bg-noir-cafe text-creme flex-shrink-0 flex flex-col fixed lg:relative inset-y-0 left-0 z-40 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+    class="w-64 bg-noir-cafe text-creme flex-shrink-0 flex flex-col fixed lg:relative inset-y-0 left-0 z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
     <div class="p-6 border-b border-creme/10 flex items-center justify-between">
         <a href="/" class="flex items-center gap-2">
             <span class="text-2xl">🍵</span>
