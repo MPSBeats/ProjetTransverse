@@ -19,14 +19,81 @@
 
 <body class="bg-creme font-body antialiased">
     <div class="flex min-h-screen">
-        <%- include('../partials/admin-sidebar', { metaTitle, adminName }) %>
+        <%- include('../partials/admin-sidebar') %>
 
             <div class="flex-1 overflow-auto">
-                <div class="p-6 lg:p-8">
-                    <h1 class="font-display text-2xl text-noir-cafe mb-8">Gestion des Stocks</h1>
+                <div class="p-6 lg:p-8 pt-20 lg:pt-8">
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
+                        <div class="text-center sm:text-left w-full sm:w-auto">
+                            <h1 class="font-display text-2xl text-noir-cafe">Gestion des Stocks</h1>
+                        </div>
+                    </div>
 
                     <div class="bg-blanc-casse rounded-gourmand-lg shadow-card overflow-hidden">
-                        <div class="overflow-x-auto">
+
+                        <!-- Mobile Card View -->
+                        <div class="md:hidden p-4 space-y-4">
+                            <% products.forEach(function(product) { %>
+                                <div x-data="{ editing: false, newStock: <%= product.stock %>, loading: false }"
+                                    class="bg-creme/20 rounded-gourmand p-4 border border-creme/30">
+                                    <div class="flex gap-3 mb-3">
+                                        <img src="<%= getProductImage(product.images, 'thumbnail') %>" alt=""
+                                            class="w-16 h-16 rounded-gourmand object-cover border border-creme/20">
+                                        <div class="flex-1 min-w-0">
+                                            <h3 class="font-medium text-noir-cafe truncate">
+                                                <%= product.name %>
+                                            </h3>
+                                            <p class="text-xs text-brun/50">
+                                                <%= product.category.name %>
+                                            </p>
+                                            <div class="mt-1 flex items-center gap-2">
+                                                <% const status=getStockStatus(product.stock,
+                                                    product.stockAlertThreshold); %>
+                                                    <span
+                                                        class="px-2 py-0.5 rounded-full text-[10px] font-medium <%= status === 'in' ? 'bg-green-100 text-green-700' : status === 'low' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700' %>">
+                                                        <%= status==='in' ? 'OK' : status==='low' ? 'Faible' : 'Rupture'
+                                                            %>
+                                                    </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center justify-between mt-4 pt-4 border-t border-creme/20">
+                                        <div>
+                                            <span class="text-xs text-brun/60">Stock :</span>
+                                            <span x-show="!editing" class="font-bold text-noir-cafe ml-1"
+                                                x-text="newStock"></span>
+                                            <input x-show="editing" type="number" x-model.number="newStock" min="0"
+                                                class="w-20 px-2 py-1 rounded border border-creme text-sm focus:border-terracotta outline-none"
+                                                style="display: none;">
+                                        </div>
+
+                                        <div>
+                                            <template x-if="!editing">
+                                                <button @click="editing = true"
+                                                    class="px-3 py-1.5 bg-terracotta/10 text-terracotta rounded-gourmand text-xs font-medium hover:bg-terracotta hover:text-white transition-colors">Modifier</button>
+                                            </template>
+                                            <template x-if="editing">
+                                                <div class="flex gap-2">
+                                                    <button
+                                                        @click="loading = true; fetch('/api/admin/products/<%= product.id %>/stock', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ stock: newStock, reason: 'adjustment' }) }).then(r => r.json()).then(d => { if(d.success) { editing = false; } loading = false; })"
+                                                        :disabled="loading"
+                                                        class="px-3 py-1.5 bg-vert-the text-white rounded-gourmand text-xs font-medium hover:bg-green-700 transition-colors">
+                                                        <span x-show="!loading">Sauvegarder</span><span
+                                                            x-show="loading">...</span>
+                                                    </button>
+                                                    <button @click="editing = false; newStock = <%= product.stock %>"
+                                                        class="px-3 py-1.5 bg-creme text-brun rounded-gourmand text-xs font-medium hover:bg-creme/80 transition-colors">Annuler</button>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                                <% }); %>
+                        </div>
+
+                        <!-- Desktop Table View -->
+                        <div class="hidden md:block overflow-x-auto">
                             <table class="w-full text-sm">
                                 <thead>
                                     <tr class="bg-creme text-left text-brun/60">

@@ -19,14 +19,16 @@
 
 <body class="bg-creme font-body antialiased">
     <div class="flex min-h-screen">
-        <%- include('../partials/admin-sidebar', { metaTitle, adminName }) %>
+        <%- include('../partials/admin-sidebar') %>
 
             <div class="flex-1 overflow-auto">
-                <div class="p-6 lg:p-8">
-                    <div class="flex items-center justify-between mb-8">
-                        <h1 class="font-display text-2xl text-noir-cafe">Codes Promo</h1>
+                <div class="p-6 lg:p-8 pt-20 lg:pt-8">
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
+                        <div class="text-center sm:text-left w-full sm:w-auto">
+                            <h1 class="font-display text-2xl text-noir-cafe">Codes Promo</h1>
+                        </div>
                         <button onclick="document.getElementById('create-promo-modal').showModal()"
-                            class="px-4 py-2 bg-terracotta text-blanc-casse rounded-gourmand font-medium hover:bg-terracotta-dark transition-colors text-sm flex items-center gap-2">
+                            class="w-full sm:w-auto px-4 py-2 bg-terracotta text-blanc-casse rounded-gourmand font-medium hover:bg-terracotta-dark transition-colors text-sm flex items-center justify-center gap-2 shadow-md">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 4v16m8-8H4" />
@@ -35,9 +37,94 @@
                         </button>
                     </div>
 
-                    <!-- Tableau -->
                     <div class="bg-blanc-casse rounded-gourmand-lg shadow-card overflow-hidden">
-                        <div class="overflow-x-auto">
+
+                        <!-- Mobile Card View -->
+                        <div class="md:hidden p-4 space-y-4">
+                            <% promos.forEach(function(promo) { const isExpired=promo.expiresAt && new
+                                Date(promo.expiresAt) < new Date(); const isMaxed=promo.maxUses && promo.currentUses>=
+                                promo.maxUses;
+                                %>
+                                <div
+                                    class="bg-creme/20 rounded-gourmand p-4 border border-creme/30 relative overflow-hidden">
+                                    <!-- Status Stripe -->
+                                    <div
+                                        class="absolute left-0 top-0 bottom-0 w-1 <%= !promo.isActive ? 'bg-red-500' : isExpired ? 'bg-yellow-500' : isMaxed ? 'bg-yellow-500' : 'bg-green-500' %>">
+                                    </div>
+
+                                    <div class="pl-3">
+                                        <div class="flex justify-between items-start mb-2">
+                                            <div>
+                                                <span class="font-bold text-terracotta text-lg tracking-wide">
+                                                    <%= promo.code %>
+                                                </span>
+                                                <p class="text-xs text-brun/60">
+                                                    <%= promo.discountType==='percentage' ? ' -' +
+                                                        parseFloat(promo.discountValue) + '%' : ' -' +
+                                                        formatPrice(parseFloat(promo.discountValue)) %>
+                                                </p>
+                                            </div>
+
+                                            <% if (!promo.isActive) { %>
+                                                <span
+                                                    class="px-2 py-1 rounded-full text-[10px] font-medium bg-red-100 text-red-700">Inactif</span>
+                                                <% } else if (isExpired) { %>
+                                                    <span
+                                                        class="px-2 py-1 rounded-full text-[10px] font-medium bg-yellow-100 text-yellow-700">Expiré</span>
+                                                    <% } else if (isMaxed) { %>
+                                                        <span
+                                                            class="px-2 py-1 rounded-full text-[10px] font-medium bg-yellow-100 text-yellow-700">Épuisé</span>
+                                                        <% } else { %>
+                                                            <span
+                                                                class="px-2 py-1 rounded-full text-[10px] font-medium bg-green-100 text-green-700">Actif</span>
+                                                            <% } %>
+                                        </div>
+
+                                        <div class="grid grid-cols-2 gap-2 text-xs text-brun/60 mb-3">
+                                            <div>
+                                                <span class="block text-brun/40">Utilisations:</span>
+                                                <%= promo.currentUses %>
+                                                    <%= promo.maxUses ? '/ ' + promo.maxUses : '' %>
+                                            </div>
+                                            <div>
+                                                <span class="block text-brun/40">Expiration:</span>
+                                                <%= promo.expiresAt ? new
+                                                    Date(promo.expiresAt).toLocaleDateString('fr-FR') : 'Aucune' %>
+                                            </div>
+                                            <% if(promo.minOrderAmount) { %>
+                                                <div class="col-span-2">
+                                                    <span class="block text-brun/40">Min. commande:</span>
+                                                    <%= formatPrice(parseFloat(promo.minOrderAmount)) %>
+                                                </div>
+                                                <% } %>
+                                        </div>
+
+                                        <div class="flex justify-end gap-2 border-t border-creme/20 mt-4 pt-4">
+                                            <button
+                                                onclick="document.getElementById('edit-promo-<%= promo.id %>').showModal()"
+                                                class="px-3 py-1.5 rounded-gourmand bg-terracotta/10 text-terracotta text-xs font-medium hover:bg-terracotta hover:text-white transition-colors">
+                                                Modifier
+                                            </button>
+                                            <form method="POST" action="/admin/promos/<%= promo.id %>/delete"
+                                                onsubmit="return confirm('Supprimer ce code promo ?')">
+                                                <button type="submit"
+                                                    class="px-3 py-1.5 rounded-gourmand bg-creme text-brun/60 text-xs font-medium hover:bg-red-50 hover:text-red-600 transition-colors">
+                                                    Supprimer
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <% }); %>
+                                    <% if (promos.length===0) { %>
+                                        <div class="text-center py-8 text-brun/40 italic">
+                                            Aucun code promo.
+                                        </div>
+                                        <% } %>
+                        </div>
+
+                        <!-- Desktop Table View -->
+                        <div class="hidden md:block overflow-x-auto">
                             <table class="w-full text-sm">
                                 <thead>
                                     <tr class="bg-creme text-left text-brun/60">

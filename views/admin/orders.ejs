@@ -15,76 +15,195 @@
         rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
     <script src="https://unpkg.com/alpinejs@3.14.3/dist/cdn.min.js" defer></script>
+    <style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            /* IE and Edge */
+            scrollbar-width: none;
+            /* Firefox */
+        }
+    </style>
 </head>
 
 <body class="bg-creme font-body antialiased">
     <div class="flex min-h-screen">
-        <%- include('../partials/admin-sidebar', { metaTitle, adminName }) %>
+        <%- include('../partials/admin-sidebar') %>
 
             <div class="flex-1 overflow-auto">
-                <div class="p-6 lg:p-8">
-                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-                        <h1 class="font-display text-2xl text-noir-cafe">Gestion des Commandes</h1>
-                        <div class="flex items-center gap-2">
+                <div class="p-6 lg:p-8 pt-20 lg:pt-8">
+                    <div class="flex flex-col lg:flex-row items-center justify-between gap-4 mb-8">
+                        <div class="text-center lg:text-left w-full lg:w-auto">
+                            <h1 class="font-display text-2xl text-noir-cafe">Gestion des Commandes</h1>
+                        </div>
+                        <div class="w-full lg:w-auto">
                             <form method="GET" action="/admin/commandes/export"
-                                class="flex items-center gap-2 flex-wrap">
-                                <input type="date" name="from"
-                                    class="px-3 py-1.5 rounded-gourmand border border-creme text-xs"
-                                    placeholder="Depuis">
-                                <input type="date" name="to"
-                                    class="px-3 py-1.5 rounded-gourmand border border-creme text-xs"
-                                    placeholder="Jusqu'à">
+                                class="flex flex-col sm:flex-row items-center gap-3 w-full">
+                                <div class="flex gap-2 w-full sm:w-auto">
+                                    <input type="date" name="from"
+                                        class="flex-1 sm:w-auto px-3 py-2 rounded-gourmand border border-creme text-sm outline-none focus:border-terracotta"
+                                        placeholder="Depuis">
+                                    <input type="date" name="to"
+                                        class="flex-1 sm:w-auto px-3 py-2 rounded-gourmand border border-creme text-sm outline-none focus:border-terracotta"
+                                        placeholder="Jusqu'à">
+                                </div>
                                 <% if (typeof currentStatus !=='undefined' && currentStatus) { %>
                                     <input type="hidden" name="status" value="<%= currentStatus %>">
                                     <% } %>
                                         <button type="submit"
-                                            class="px-5 py-2 bg-noir-cafe text-blanc-casse rounded-gourmand font-medium text-sm hover:bg-noir-cafe/80 transition-all shadow-md flex items-center gap-2">
+                                            class="w-full sm:w-auto px-5 py-2 bg-noir-cafe text-blanc-casse rounded-gourmand font-medium text-sm hover:bg-noir-cafe/80 transition-all shadow-md flex items-center justify-center gap-2">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                             </svg>
-                                            📊 Export CSV
+                                            Export CSV
                                         </button>
                             </form>
                         </div>
                     </div>
 
                     <!-- Filtres statut -->
-                    <div class="flex gap-2 mb-6 overflow-x-auto">
+                    <div class="flex gap-2 mb-6 overflow-x-auto pb-2 no-scrollbar pr-4">
                         <a href="/admin/commandes"
-                            class="px-4 py-2 rounded-gourmand text-sm transition-colors <%= !currentStatus ? 'bg-terracotta text-blanc-casse' : 'bg-blanc-casse text-brun hover:bg-creme shadow-card' %>">Toutes</a>
+                            class="whitespace-nowrap px-4 py-2 rounded-gourmand text-sm transition-colors <%= !currentStatus ? 'bg-terracotta text-blanc-casse' : 'bg-blanc-casse text-brun hover:bg-creme shadow-card' %>">Toutes</a>
                         <a href="/admin/commandes?statut=pending"
-                            class="px-4 py-2 rounded-gourmand text-sm transition-colors <%= currentStatus === 'pending' ? 'bg-terracotta text-blanc-casse' : 'bg-blanc-casse text-brun hover:bg-creme shadow-card' %>">En
+                            class="whitespace-nowrap px-4 py-2 rounded-gourmand text-sm transition-colors <%= currentStatus === 'pending' ? 'bg-terracotta text-blanc-casse' : 'bg-blanc-casse text-brun hover:bg-creme shadow-card' %>">En
                             attente</a>
                         <a href="/admin/commandes?statut=paid"
-                            class="px-4 py-2 rounded-gourmand text-sm transition-colors <%= currentStatus === 'paid' ? 'bg-terracotta text-blanc-casse' : 'bg-blanc-casse text-brun hover:bg-creme shadow-card' %>">Payées</a>
+                            class="whitespace-nowrap px-4 py-2 rounded-gourmand text-sm transition-colors <%= currentStatus === 'paid' ? 'bg-terracotta text-blanc-casse' : 'bg-blanc-casse text-brun hover:bg-creme shadow-card' %>">Payées</a>
                         <a href="/admin/commandes?statut=preparing"
-                            class="px-4 py-2 rounded-gourmand text-sm transition-colors <%= currentStatus === 'preparing' ? 'bg-terracotta text-blanc-casse' : 'bg-blanc-casse text-brun hover:bg-creme shadow-card' %>">En
+                            class="whitespace-nowrap px-4 py-2 rounded-gourmand text-sm transition-colors <%= currentStatus === 'preparing' ? 'bg-terracotta text-blanc-casse' : 'bg-blanc-casse text-brun hover:bg-creme shadow-card' %>">En
                             préparation</a>
                         <a href="/admin/commandes?statut=shipped"
-                            class="px-4 py-2 rounded-gourmand text-sm transition-colors <%= currentStatus === 'shipped' ? 'bg-terracotta text-blanc-casse' : 'bg-blanc-casse text-brun hover:bg-creme shadow-card' %>">Expédiées</a>
+                            class="whitespace-nowrap px-4 py-2 rounded-gourmand text-sm transition-colors <%= currentStatus === 'shipped' ? 'bg-terracotta text-blanc-casse' : 'bg-blanc-casse text-brun hover:bg-creme shadow-card' %>">Expédiées</a>
                         <a href="/admin/commandes?statut=delivered"
-                            class="px-4 py-2 rounded-gourmand text-sm transition-colors <%= currentStatus === 'delivered' ? 'bg-terracotta text-blanc-casse' : 'bg-blanc-casse text-brun hover:bg-creme shadow-card' %>">Livrées</a>
+                            class="whitespace-nowrap px-4 py-2 rounded-gourmand text-sm transition-colors <%= currentStatus === 'delivered' ? 'bg-terracotta text-blanc-casse' : 'bg-blanc-casse text-brun hover:bg-creme shadow-card' %>">Livrées</a>
                     </div>
 
-                    <!-- Tableau -->
-                    <div class="bg-blanc-casse rounded-gourmand-lg shadow-card">
-                        <% if (orders.length===0) { %>
-                            <div class="text-center py-12">
-                                <p class="text-brun/40">Aucune commande</p>
+                    <!-- Contenu principal -->
+                    <% if (orders.length===0) { %>
+                        <div class="bg-blanc-casse rounded-gourmand-lg shadow-card p-12 text-center">
+                            <p class="text-brun/40">Aucune commande trouvée</p>
+                        </div>
+                        <% } else { %>
+
+                            <!-- VUE MOBILE : CARTES -->
+                            <div class="md:hidden space-y-4">
+                                <% orders.forEach(function(order) { %>
+                                    <%# Hide active unpaid orders on mobile because they are managed via the
+                                        notification bell %>
+                                        <% if (!order.isPaid && order.status !=='cancelled' ) return; %>
+                                            <div
+                                                class="bg-blanc-casse rounded-gourmand-lg shadow-card p-5 border border-creme/20">
+                                                <div class="flex items-start justify-between mb-4">
+                                                    <div>
+                                                        <span
+                                                            class="text-xs font-bold text-terracotta bg-terracotta/10 px-2 py-1 rounded-full">
+                                                            <%= order.orderNumber %>
+                                                        </span>
+                                                        <p class="mt-2 font-display text-lg text-noir-cafe">
+                                                            <%= order.customerName %>
+                                                        </p>
+                                                        <p class="text-xs text-brun/50">
+                                                            <%= new Date(order.createdAt).toLocaleDateString('fr-FR', {
+                                                                day: 'numeric' , month: 'long' , hour: '2-digit' ,
+                                                                minute:'2-digit' }) %>
+                                                        </p>
+                                                    </div>
+                                                    <div class="text-right">
+                                                        <p class="font-display text-xl text-noir-cafe">
+                                                            <%= formatPrice(order.total) %>
+                                                        </p>
+                                                        <p class="text-xs text-brun/50">
+                                                            <%= order.items.length %> article<%= order.items.length> 1 ?
+                                                                    's' :
+                                                                    '' %>
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Articles preview -->
+                                                <div class="bg-creme/20 rounded-gourmand p-3 mb-4 space-y-1">
+                                                    <% order.items.slice(0, 3).forEach(function(item) { %>
+                                                        <div class="flex justify-between text-sm">
+                                                            <span class="text-brun/80"><span
+                                                                    class="font-bold text-terracotta">
+                                                                    <%= item.quantity %>x
+                                                                </span>
+                                                                <%= item.productName %>
+                                                            </span>
+                                                        </div>
+                                                        <% }); %>
+                                                            <% if (order.items.length> 3) { %>
+                                                                <p class="text-xs text-brun/40 italic mt-1">+ <%=
+                                                                        order.items.length - 3 %> autres...</p>
+                                                                <% } %>
+                                                                    <% if (order.notes) { %>
+                                                                        <div
+                                                                            class="mt-2 pt-2 border-t border-creme/20 text-xs italic text-brun/70">
+                                                                            "<%= order.notes %>"
+                                                                        </div>
+                                                                        <% } %>
+                                                </div>
+
+                                                <div class="flex flex-col gap-2">
+                                                    <div
+                                                        class="flex items-center gap-2 bg-white/50 p-2 rounded-gourmand border border-creme/20">
+                                                        <input type="checkbox" id="paid-<%= order.id %>" <%=order.isPaid
+                                                            ? 'checked' : '' %>
+                                                        onchange="fetch('/api/admin/orders/<%= order.id %>/status', {
+                                                            method:
+                                                            'PUT', headers: { 'Content-Type': 'application/json' },
+                                                            body:
+                                                            JSON.stringify({ isPaid: this.checked }) }).then(() =>
+                                                            location.reload())"
+                                                            class="w-4 h-4 text-terracotta rounded focus:ring-terracotta
+                                                            cursor-pointer accent-terracotta">
+                                                            <label for="paid-<%= order.id %>"
+                                                                class="text-xs font-medium text-noir-cafe cursor-pointer select-none">
+                                                                Commande payée
+                                                            </label>
+                                                    </div>
+                                                    <div class="flex-1">
+                                                        <select
+                                                            onchange="fetch('/api/admin/orders/<%= order.id %>/status', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: this.value }) }).then(() => location.reload())"
+                                                            class="w-full px-3 py-2 rounded-gourmand text-xs font-medium cursor-pointer border-none outline-none appearance-none text-center"
+                                                            style="background: <%= getOrderStatusColor(order.status) %>20; color: <%= getOrderStatusColor(order.status) %>;">
+                                                            <% ['pending','preparing','ready','shipped','delivered','cancelled'].forEach(function(s)
+                                                                { %>
+                                                                <option value="<%= s %>" <%=order.status===s
+                                                                    ? 'selected' : '' %>><%= getOrderStatusLabel(s) %>
+                                                                </option>
+                                                                <% }); %>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div
+                                                    class="flex items-center gap-2 text-xs text-brun/50 bg-creme/30 px-3 py-2 rounded-gourmand">
+                                                    <%= order.deliveryMethod==='pickup' ? '📍 Retrait' : '🚚 Livraison'
+                                                        %>
+                                                </div>
+                                            </div>
+                                            <% }); %>
                             </div>
-                            <% } else { %>
+
+                            <!-- VUE DESKTOP : TABLEAU -->
+                            <div class="hidden md:block bg-blanc-casse rounded-gourmand-lg shadow-card overflow-hidden">
                                 <div class="overflow-x-auto">
                                     <table class="w-full text-sm">
                                         <thead>
                                             <tr class="bg-creme text-left text-brun/60">
                                                 <th class="px-4 py-3">N° Commande</th>
                                                 <th class="px-4 py-3">Client</th>
-                                                <th class="px-4 py-3">Articles</th>
+                                                <th class="px-4 py-3 w-1/4">Articles</th>
                                                 <th class="px-4 py-3">Total</th>
                                                 <th class="px-4 py-3">Livraison</th>
                                                 <th class="px-4 py-3">Statut</th>
                                                 <th class="px-4 py-3">Date</th>
+                                                <th class="px-4 py-3 w-10"></th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -101,9 +220,31 @@
                                                         <p class="text-xs text-brun/40">
                                                             <%= order.customerEmail %>
                                                         </p>
+                                                        <% if (order.customerPhone) { %>
+                                                            <p class="text-xs text-brun/40">
+                                                                <%= order.customerPhone %>
+                                                            </p>
+                                                            <% } %>
+                                                                <% if (order.notes) { %>
+                                                                    <div
+                                                                        class="mt-2 p-1.5 bg-yellow-50 rounded border border-yellow-100 text-[10px] text-brun/80 leading-tight">
+                                                                        <strong>Note:</strong>
+                                                                        <%= order.notes %>
+                                                                    </div>
+                                                                    <% } %>
                                                     </td>
                                                     <td class="px-4 py-3 text-brun/60">
-                                                        <%= order.items.length %> article(s)
+                                                        <div class="flex flex-col gap-1 max-h-32 overflow-y-auto">
+                                                            <% order.items.forEach(function(item) { %>
+                                                                <span
+                                                                    class="text-xs border-b border-creme/20 last:border-0 pb-1 last:pb-0">
+                                                                    <strong class="text-terracotta">
+                                                                        <%= item.quantity %>x
+                                                                    </strong>
+                                                                    <%= item.productName %>
+                                                                </span>
+                                                                <% }); %>
+                                                        </div>
                                                     </td>
                                                     <td class="px-4 py-3 font-medium">
                                                         <%= formatPrice(order.total) %>
@@ -115,30 +256,48 @@
                                                     <td class="px-4 py-3">
                                                         <select
                                                             onchange="fetch('/api/admin/orders/<%= order.id %>/status', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: this.value }) }).then(() => location.reload())"
-                                                            class="px-2 py-1 rounded-full text-xs font-medium cursor-pointer border-0 outline-none"
+                                                            class="px-3 py-1 rounded-full text-xs font-medium cursor-pointer border-0 outline-none hover:opacity-80 transition-opacity appearance-none text-center min-w-[100px]"
                                                             style="background: <%= getOrderStatusColor(order.status) %>20; color: <%= getOrderStatusColor(order.status) %>;">
                                                             <% ['pending','paid','preparing','ready','shipped','delivered','cancelled'].forEach(function(s)
                                                                 { %>
                                                                 <option value="<%= s %>" <%=order.status===s
-                                                                    ? 'selected' : '' %>><%= getOrderStatusLabel(s) %>
+                                                                    ? 'selected' : '' %>>
+                                                                    <%= getOrderStatusLabel(s) %>
                                                                 </option>
                                                                 <% }); %>
                                                         </select>
                                                     </td>
-                                                    <td class="px-4 py-3 text-brun/50 text-xs">
+                                                    <td class="px-4 py-3 text-brun/50 text-xs whitespace-nowrap">
                                                         <%= new Date(order.createdAt).toLocaleDateString('fr-FR', {
                                                             day: '2-digit' , month: '2-digit' , year: 'numeric' ,
                                                             hour: '2-digit' , minute: '2-digit' }) %>
+                                                    </td>
+                                                    <td class="px-4 py-3 text-right">
+                                                        <% if (['cancelled', 'canceled' , 'CANCELLED' , 'annulée'
+                                                            ].includes(order.status.toLowerCase())) { %>
+                                                            <button
+                                                                onclick="if(confirm('Supprimer la commande <%= order.orderNumber %> ?')) { fetch('/admin/commandes/<%= order.id %>/delete', { method: 'POST' }).then(() => window.location.reload()); }"
+                                                                class="p-1.5 text-brun/40 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                                                                title="Supprimer">
+                                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                                    viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                                        stroke-width="2"
+                                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                </svg>
+                                                            </button>
+                                                            <% } %>
                                                     </td>
                                                 </tr>
                                                 <% }); %>
                                         </tbody>
                                     </table>
                                 </div>
-                                <% } %>
-                    </div>
+                            </div>
+                            <% } %>
                 </div>
             </div>
+    </div>
     </div>
 </body>
 

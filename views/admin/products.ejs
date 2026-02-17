@@ -19,14 +19,16 @@
 
 <body class="bg-creme font-body antialiased">
     <div class="flex min-h-screen">
-        <%- include('../partials/admin-sidebar', { metaTitle, adminName }) %>
+        <%- include('../partials/admin-sidebar') %>
 
             <div class="flex-1 overflow-auto">
-                <div class="p-6 lg:p-8">
-                    <div class="flex items-center justify-between mb-8">
-                        <h1 class="font-display text-2xl text-noir-cafe">Gestion des Produits</h1>
+                <div class="p-6 lg:p-8 pt-20 lg:pt-8">
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
+                        <div class="text-center sm:text-left w-full sm:w-auto">
+                            <h1 class="font-display text-2xl text-noir-cafe">Gestion des Produits</h1>
+                        </div>
                         <button onclick="document.getElementById('create-modal').showModal()"
-                            class="px-4 py-2 bg-terracotta text-blanc-casse rounded-gourmand font-medium hover:bg-terracotta-dark transition-colors text-sm flex items-center gap-2">
+                            class="w-full sm:w-auto px-4 py-2 bg-terracotta text-blanc-casse rounded-gourmand font-medium hover:bg-terracotta-dark transition-colors text-sm flex items-center justify-center gap-2 shadow-md">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 4v16m8-8H4" />
@@ -47,7 +49,7 @@
                                         placeholder="Rechercher..."
                                         class="flex-1 px-4 py-2 rounded-gourmand border border-creme focus:border-terracotta outline-none text-sm">
                                     <select name="categorie"
-                                        class="px-4 py-2 rounded-gourmand border border-creme focus:border-terracotta outline-none text-sm">
+                                        class="px-4 py-2 rounded-gourmand border border-creme focus:border-terracotta outline-none text-sm bg-white">
                                         <option value="">Toutes catégories</option>
                                         <% categories.forEach(function(cat) { %>
                                             <option value="<%= cat.id %>" <%=currentCategory===cat.id ? 'selected' : ''
@@ -56,11 +58,106 @@
                                             <% }); %>
                                     </select>
                                     <button type="submit"
-                                        class="px-4 py-2 bg-noir-cafe text-creme rounded-gourmand text-sm hover:bg-brun transition-colors">Filtrer</button>
+                                        class="px-4 py-2 bg-noir-cafe text-creme rounded-gourmand text-sm hover:bg-brun transition-colors shadow-sm">Filtrer</button>
                                 </form>
 
-                                <!-- Tableau produits -->
-                                <div class="bg-blanc-casse rounded-gourmand-lg shadow-card overflow-hidden">
+                                <!-- VUE MOBILE : CARTES -->
+                                <div class="md:hidden space-y-4">
+                                    <% products.forEach(function(product) { %>
+                                        <div
+                                            class="bg-blanc-casse rounded-gourmand-lg shadow-card p-4 border border-creme/20 flex gap-4">
+                                            <!-- Image -->
+                                            <div class="flex-shrink-0">
+                                                <img src="<%= getProductImage(product.images, 'thumbnail') %>" alt=""
+                                                    class="w-20 h-20 rounded-gourmand object-cover border border-creme">
+                                            </div>
+                                            <!-- Content -->
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex justify-between items-start">
+                                                    <div>
+                                                        <h3
+                                                            class="font-display text-lg text-noir-cafe leading-tight truncate pr-2">
+                                                            <%= product.name %>
+                                                        </h3>
+                                                        <p class="text-xs text-brun/50">
+                                                            <%= product.category.name %>
+                                                        </p>
+                                                    </div>
+                                                    <div class="text-right flex-shrink-0">
+                                                        <% if (product.promoPrice) { %>
+                                                            <span class="text-terracotta font-bold block">
+                                                                <%= formatPrice(product.promoPrice) %>
+                                                            </span>
+                                                            <span class="text-brun/30 line-through text-xs block">
+                                                                <%= formatPrice(product.price) %>
+                                                            </span>
+                                                            <% } else { %>
+                                                                <span class="font-bold text-brun block">
+                                                                    <%= formatPrice(product.price) %>
+                                                                </span>
+                                                                <% } %>
+                                                    </div>
+                                                </div>
+
+                                                <div
+                                                    class="flex items-center justify-between mt-4 pt-4 border-t border-creme/20">
+                                                    <% const status=getStockStatus(product.stock,
+                                                        product.stockAlertThreshold); %>
+                                                        <span
+                                                            class="px-2 py-0.5 rounded-full text-[10px] font-medium <%= status === 'in' ? 'bg-green-100 text-green-700' : status === 'low' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700' %>">
+                                                            Stack: <%= product.stock %>
+                                                        </span>
+
+                                                        <div class="flex items-center gap-1">
+                                                            <a href="/boutique/<%= product.slug %>" target="_blank"
+                                                                class="p-1.5 text-brun/40 hover:text-terracotta bg-creme/10 rounded-full transition-colors"
+                                                                title="Voir">
+                                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                                    viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                                        stroke-width="2"
+                                                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                                        stroke-width="2"
+                                                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                                </svg>
+                                                            </a>
+                                                            <button
+                                                                onclick="document.getElementById('edit-modal-<%= product.id %>').showModal()"
+                                                                class="p-1.5 text-brun/40 hover:text-vert-the bg-creme/10 rounded-full transition-colors"
+                                                                title="Modifier">
+                                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                                    viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                                        stroke-width="2"
+                                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                                </svg>
+                                                            </button>
+                                                            <form method="POST"
+                                                                action="/admin/produits/<%= product.id %>/delete"
+                                                                onsubmit="return confirm('Supprimer ce produit ?')"
+                                                                class="flex items-center">
+                                                                <button type="submit"
+                                                                    class="p-1.5 text-brun/40 hover:text-red-500 bg-creme/10 rounded-full transition-colors"
+                                                                    title="Supprimer">
+                                                                    <svg class="w-4 h-4" fill="none"
+                                                                        stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round"
+                                                                            stroke-linejoin="round" stroke-width="2"
+                                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                    </svg>
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <% }); %>
+                                </div>
+
+                                <!-- Tableau produits (DESKTOP) -->
+                                <div
+                                    class="hidden md:block bg-blanc-casse rounded-gourmand-lg shadow-card overflow-hidden">
                                     <div class="overflow-x-auto">
                                         <table class="w-full text-sm">
                                             <thead>
