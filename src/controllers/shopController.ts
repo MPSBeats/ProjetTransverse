@@ -40,10 +40,41 @@ export async function homePage(req: Request, res: Response): Promise<void> {
         }
 
         res.render('pages/home', {
-            metaTitle: "L'InviThé Gourmand — Salon de Thé, Macarons Artisanaux, Paris 14e",
-            metaDescription: "Découvrez notre salon de thé parisien. Thés bio sélectionnés, macarons artisanaux, pâtisseries maison et glaces artisanales. Commandez en ligne ou rendez-nous visite au 64 rue d'Alésia, Paris 14e.",
+            metaTitle: "Maison L'InviThé Gourmand — Salon de Thé & Pâtisserie Artisanale Paris 14",
+            metaDescription: "Salon de thé cosy rue d'Alésia (Paris 14e). Dégustez nos pâtisseries artisanales, macarons, brunchs faits maison et thés bio. Sur place ou à emporter.",
             metaImage: '/images/og-home.jpg',
             canonicalUrl: process.env.APP_URL || 'http://localhost:3000',
+            jsonLd: {
+                "@context": "https://schema.org",
+                "@type": "LocalBusiness",
+                "name": "L'InviThé Gourmand",
+                "image": `${process.env.APP_URL}/images/logo.png`,
+                "telephone": "01 45 42 66 12",
+                "email": "contact@invithegourmand.fr",
+                "address": {
+                    "@type": "PostalAddress",
+                    "streetAddress": "64 rue d'Alésia",
+                    "addressLocality": "Paris",
+                    "postalCode": "75014",
+                    "addressCountry": "FR"
+                },
+                "geo": {
+                    "@type": "GeoCoordinates",
+                    "latitude": 48.8285,
+                    "longitude": 2.3256
+                },
+                "url": process.env.APP_URL || "http://localhost:3000",
+                "openingHoursSpecification": [
+                    {
+                        "@type": "OpeningHoursSpecification",
+                        "dayOfWeek": ["Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+                        "opens": "11:00",
+                        "closes": "19:00"
+                    }
+                ],
+                "priceRange": "€€",
+                "servesCuisine": "Tea, Pastries, Macarons, Ice Cream"
+            },
             featuredProducts,
             categories,
             formatPrice,
@@ -52,39 +83,6 @@ export async function homePage(req: Request, res: Response): Promise<void> {
             getSingleImage,
             calculateDiscount,
             getStockStatus,
-            jsonLd: {
-                '@context': 'https://schema.org',
-                '@type': 'LocalBusiness',
-                name: "L'InviThé Gourmand",
-                description: 'Salon de thé, macarons artisanaux et pâtisseries — Paris 14e',
-                url: process.env.APP_URL,
-                telephone: '+33123456789',
-                address: {
-                    '@type': 'PostalAddress',
-                    streetAddress: "64, rue d'Alésia",
-                    addressLocality: 'Paris',
-                    postalCode: '75014',
-                    addressCountry: 'FR',
-                },
-                geo: { '@type': 'GeoCoordinates', latitude: 48.8283, longitude: 2.3269 },
-                openingHoursSpecification: [
-                    {
-                        '@type': 'OpeningHoursSpecification',
-                        dayOfWeek: ['Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-                        opens: '10:00',
-                        closes: '19:00',
-                    },
-                    {
-                        '@type': 'OpeningHoursSpecification',
-                        dayOfWeek: 'Sunday',
-                        opens: '10:00',
-                        closes: '17:00',
-                    },
-                ],
-                priceRange: '€€',
-                servesCuisine: 'Salon de thé, Pâtisserie',
-                image: `${process.env.APP_URL}/images/og-home.jpg`,
-            },
         });
     } catch (error) {
         console.error('❌ Erreur page accueil :', error);
@@ -208,6 +206,30 @@ export async function shopPage(req: Request, res: Response): Promise<void> {
             getProductImage,
             calculateDiscount,
             getStockStatus,
+            jsonLd: {
+                "@context": "https://schema.org",
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {
+                        "@type": "ListItem",
+                        "position": 1,
+                        "name": "Accueil",
+                        "item": `${process.env.APP_URL}`
+                    },
+                    {
+                        "@type": "ListItem",
+                        "position": 2,
+                        "name": "Boutique",
+                        "item": `${process.env.APP_URL}/boutique`
+                    },
+                    ...(categorySlug ? [{
+                        "@type": "ListItem",
+                        "position": 3,
+                        "name": categories.find((c: any) => c.slug === categorySlug)?.name || categorySlug,
+                        "item": `${process.env.APP_URL}/boutique?categorie=${categorySlug}`
+                    }] : [])
+                ]
+            }
         });
     } catch (error) {
         console.error('❌ Erreur page boutique :', error);
@@ -262,7 +284,7 @@ export async function productPage(req: Request, res: Response): Promise<void> {
 
         res.render('pages/product', {
             metaTitle: `${product.name} — L'InviThé Gourmand`,
-            metaDescription: product.shortDescription || `Découvrez ${product.name} dans notre boutique en ligne.`,
+            metaDescription: product.shortDescription || `Découvrez notre ${product.name}, une création artisanale de L'InviThé Gourmand.`,
             metaImage: getProductImage(product.images, 'large'),
             canonicalUrl: `${process.env.APP_URL}/boutique/${product.slug}`,
             product,
@@ -276,24 +298,25 @@ export async function productPage(req: Request, res: Response): Promise<void> {
             calculateDiscount,
             getStockStatus,
             jsonLd: {
-                '@context': 'https://schema.org',
-                '@type': 'Product',
-                name: product.name,
-                description: product.shortDescription || product.name,
-                image: `${process.env.APP_URL}${getProductImage(product.images, 'large')}`,
-                sku: product.slug,
-                offers: {
-                    '@type': 'Offer',
-                    price: Number(product.promoPrice || product.price),
-                    priceCurrency: 'EUR',
-                    availability: product.stock > 0
-                        ? 'https://schema.org/InStock'
-                        : 'https://schema.org/OutOfStock',
-                    seller: { '@type': 'Organization', name: "L'InviThé Gourmand" },
+                "@context": "https://schema.org",
+                "@type": "Product",
+                "name": product.name,
+                "image": [`${process.env.APP_URL}${getProductImage(product.images, 'large')}`],
+                "description": product.longDescription || product.shortDescription,
+                "sku": product.id,
+                "brand": {
+                    "@type": "Brand",
+                    "name": "L'InviThé Gourmand"
                 },
-                brand: { '@type': 'Brand', name: "L'InviThé Gourmand" },
-                category: product.category.name,
-            },
+                "offers": {
+                    "@type": "Offer",
+                    "url": `${process.env.APP_URL}/boutique/${product.slug}`,
+                    "priceCurrency": "EUR",
+                    "price": product.price,
+                    "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+                    "itemCondition": "https://schema.org/NewCondition"
+                }
+            }
         });
     } catch (error) {
         console.error('❌ Erreur fiche produit :', error);
@@ -334,11 +357,15 @@ export async function sitemapXml(req: Request, res: Response): Promise<void> {
         xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
 
         // Pages statiques
+        // Pages statiques
         const staticPages = [
             { url: '/', priority: '1.0', changefreq: 'daily' },
             { url: '/menu', priority: '0.8', changefreq: 'weekly' },
             { url: '/boutique', priority: '0.9', changefreq: 'daily' },
             { url: '/contact', priority: '0.5', changefreq: 'monthly' },
+            { url: '/mentions-legales', priority: '0.3', changefreq: 'yearly' },
+            { url: '/cgv', priority: '0.3', changefreq: 'yearly' },
+            { url: '/confidentialite', priority: '0.3', changefreq: 'yearly' },
         ];
 
         for (const page of staticPages) {
