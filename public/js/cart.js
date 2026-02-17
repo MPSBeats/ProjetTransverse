@@ -13,8 +13,10 @@ document.addEventListener('alpine:init', () => {
         toastMessage: '',
 
         init() {
-            // Charger le panier depuis le serveur
-            this.fetchCart();
+            // Charger le panier depuis le serveur (sauf si page confirmation)
+            if (!window.location.pathname.includes('/confirmation')) {
+                this.fetchCart();
+            }
         },
 
         async fetchCart() {
