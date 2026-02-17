@@ -10,6 +10,7 @@ import {
     createProduct,
     updateProduct,
     deleteProduct,
+    deleteOrder,
     ordersPage,
     stocksPage,
     categoriesPage,
@@ -49,6 +50,7 @@ router.post('/produits/:id/delete', deleteProduct);
 
 /* ─── Commandes ─── */
 router.get('/commandes', ordersPage);
+router.post('/commandes/:id/delete', deleteOrder);
 router.get('/commandes/export', exportOrdersCSV);
 
 /* ─── Stocks ─── */

@@ -1,6 +1,18 @@
 <% layout('layouts/main') -%>
 
     <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+        <!-- Force clear frontend cart -->
+        <script>
+            document.addEventListener('alpine:init', () => {
+                const cart = Alpine.store('cart');
+                if (cart) {
+                    cart.items = [];
+                    cart.count = 0;
+                    cart.total = 0;
+                    cart.subtotal = 0;
+                }
+            });
+        </script>
         <% if (order) { %>
             <!-- Confettis animation -->
             <div class="relative inline-block mb-8" data-aos="zoom-in">
@@ -64,17 +76,36 @@
                     <% if (order.deliveryMethod==='pickup' ) { %>
                         <p class="text-sm text-brun">📍 <strong>Retrait en boutique</strong> — 64, rue d'Alésia, 75014
                             Paris</p>
-                        <p class="text-xs text-brun/50 mt-1">Votre commande sera prête sous 24h. Nous vous enverrons un
-                            email.</p>
-                        <% } else { %>
-                            <p class="text-sm text-brun">🚚 <strong>Livraison à domicile</strong></p>
-                            <p class="text-xs text-brun/50 mt-1">Expédition sous 48h. Un email de suivi vous sera
-                                envoyé.</p>
+                        <% if (order.deliverySlot) { %>
+                            <p class="text-sm text-brand-brown font-medium mt-1">📅 Créneau : <%= order.deliverySlot %>
+                            </p>
                             <% } %>
+                                <p class="text-xs text-brun/50 mt-1">Votre commande sera prête sous 24h. Nous vous
+                                    enverrons un
+                                    email.</p>
+                                <% } else { %>
+                                    <p class="text-sm text-brun">🚚 <strong>Livraison à domicile</strong></p>
+                                    <% if (order.deliverySlot) { %>
+                                        <p class="text-sm text-brand-brown font-medium mt-1">📅 Créneau : <%=
+                                                order.deliverySlot %>
+                                        </p>
+                                        <% } %>
+                                            <p class="text-xs text-brun/50 mt-1">Expédition sous 48h. Un email de suivi
+                                                vous sera
+                                                envoyé.</p>
+                                            <% } %>
                 </div>
             </div>
 
             <div class="flex flex-col sm:flex-row gap-4 justify-center mt-10" data-aos="fade-up" data-aos-delay="400">
+                <a href="/commande/<%= order.id %>/facture"
+                    class="px-8 py-3 bg-white border-2 border-terracotta text-terracotta rounded-gourmand font-medium hover:bg-terracotta hover:text-white transition-colors shadow-sm flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Télécharger la facture
+                </a>
                 <a href="/boutique"
                     class="px-8 py-3 bg-terracotta text-blanc-casse rounded-gourmand font-medium hover:bg-terracotta-dark transition-colors shadow-warm">Continuer
                     mes achats</a>
